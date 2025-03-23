@@ -579,6 +579,13 @@ function getIndustryWeights(industry) {
 
 
 // Function to analyze website content for Authority Index
+/**
+ * Analyzes website content to calculate the Authority Index score
+ * @param {string} content - The webpage content
+ * @param {string} industry - The industry category
+ * @param {string} specialty - Optional specialty within the industry
+ * @returns {Object} - Complete analysis results
+ */
 function analyzeAuthorityIndex(content, industry, specialty = "") {
   // Capture detailed content analysis
   const contentAnalysis = {
@@ -608,21 +615,29 @@ function analyzeAuthorityIndex(content, industry, specialty = "") {
   let digitalAuthority = calculateAuthorityScore(content, industry, specialty, contentAnalysis);
   const consistencyMarkers = calculateConsistencyScore(content, contentAnalysis);
   
-  // Apply Australian compliance adjustments if applicable
-  if (industry === "Healthcare") {
-    const complianceScore = detectAustralianComplianceMarkers(content);
+  // Apply industry-specific compliance adjustments if applicable
+  const industryData = industryRegulations[industry] || industryRegulations["Default"];
+  let complianceScore = 0;
+  
+  if (industryData && industryData.regulatoryBodies) {
+    complianceScore = detectIndustryComplianceMarkers(content, industry);
     // Add compliance boost to expertise
     expertiseSignals = Math.min(100, Math.round(expertiseSignals + (complianceScore * 0.2)));
     
     // Adjust authority for regulatory limitations
-    digitalAuthority = adjustAuthorityForRegulations(digitalAuthority, industry, specialty);
+    if (industry === "Healthcare" || industry === "Finance" || industry === "Legal") {
+      digitalAuthority = adjustAuthorityForRegulations(digitalAuthority, industry, specialty);
+    }
   }
   
-  // Calculate overall Authority Index with updated weights
+  // Get weights based on industry
+  const weights = getIndustryWeights(industry);
+  
+  // Calculate overall Authority Index with industry-specific weights
   const authorityIndex = Math.round(
-    (expertiseSignals * 0.45) + 
-    (digitalAuthority * 0.35) + 
-    (consistencyMarkers * 0.2)
+    (expertiseSignals * weights.expertiseWeight) + 
+    (digitalAuthority * weights.authorityWeight) + 
+    (consistencyMarkers * weights.consistencyWeight)
   );
   
   // Determine position in the quadrant
@@ -652,6 +667,14 @@ function analyzeAuthorityIndex(content, industry, specialty = "") {
     position
   }, industry, specialty);
   
+  // Calculate rating bands
+  const ratingBands = {
+    expertise: getRatingBand(expertiseSignals),
+    authority: getRatingBand(digitalAuthority),
+    consistency: getRatingBand(consistencyMarkers),
+    overall: getRatingBand(authorityIndex)
+  };
+  
   return {
     expertiseSignals,
     digitalAuthority,
@@ -661,10 +684,22 @@ function analyzeAuthorityIndex(content, industry, specialty = "") {
     position,
     recommendations,
     diagnosis,
-    contentAnalysis
+    contentAnalysis,
+    complianceScore,
+    ratingBands
   };
 }
 
+/**
+ * Determines the rating band for a score (Low, Medium, High)
+ * @param {number} score - Score value (0-100)
+ * @returns {string} - Rating band classification
+ */
+function getRatingBand(score) {
+  if (score <= 40) return "Low";
+  if (score <= 70) return "Medium";
+  return "High";
+}
 // Determine market position based on scores
 function determineMarketPosition(expertiseSignals, digitalAuthority) {
   // Threshold for quadrant boundaries
