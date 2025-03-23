@@ -979,30 +979,29 @@ function generateRecommendations(analysis, industry, specialty, contentAnalysis)
   return recommendations.slice(0, 5); // Return top 5 recommendations
 }
 
-// Helper function to get industry-specific terms
+/**
+ * Gets industry-specific terms for content analysis
+ * @param {string} industry - The industry category
+ * @param {string} specialty - Optional specialty within the industry
+ * @returns {Array} - List of industry-specific terms
+ */
 function getIndustryTerms(industry, specialty = "") {
-  const terms = {
-    "Healthcare": [
-      "patient", "care", "health", "treatment", "diagnosis", 
-      "medical", "clinical", "healthcare", "procedure", "consultation"
-    ],
-    "Construction": [
-      "build", "construction", "project", "design", "renovation",
-      "contractor", "building", "structure", "quality", "materials"
-    ],
-    "Environmental": [
-      "sustainable", "environment", "eco-friendly", "conservation", "green",
-      "renewable", "efficiency", "impact", "assessment", "management"
-    ],
-    "Technology": [
-      "software", "development", "solution", "innovation", "digital",
-      "technology", "system", "application", "platform", "integration"
-    ],
-    "Finance": [
-      "financial", "investment", "planning", "wealth", "tax",
-      "retirement", "portfolio", "strategy", "risk", "management"
-    ]
-  };
+  // Get general industry terms
+  const industryData = industryTerminology[industry] || {};
+  let terms = industryData.generalTerms || [];
+  
+  // Add specialty-specific terms if applicable
+  if (industry && specialty && industryData.specialtyTerms && industryData.specialtyTerms[specialty]) {
+    terms = [...terms, ...industryData.specialtyTerms[specialty]];
+  }
+  
+  // If no terms found, return empty array
+  if (terms.length === 0) {
+    console.warn(`No terminology data found for industry: ${industry}${specialty ? ', specialty: ' + specialty : ''}`);
+  }
+  
+  return terms;
+}
   
   // Add specialty-specific terms
   if (industry === "Healthcare" && specialty) {
