@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LABSOLUTELY.ai</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f8f9fa;
+    }
+    h1, h2, h3 {
+      color: #0a2540;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 25px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button, .button {
+      background-color: #0a2540;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button:hover, .button:hover {
+      background-color: #0d3256;
+    }
+    button:disabled {
+      background-color: #cbd5e0;
+      cursor: not-allowed;
+    }
+    .hidden {
+      display: none;
+    }
+    .scores-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .score-card {
+      flex: 1;
+      min-width: 180px;
+      text-align: center;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-top: 4px solid #0a2540;
+    }
+    .score-card.expertise {
+      border-top-color: #4299e1;
+    }
+    .score-card.authority {
+      border-top-color: #48bb78;
+    }
+    .score-card.consistency {
+      border-top-color: #ed8936;
+    }
+    .score-card.overall {
+      border-top-color: #0a2540;
+    }
+    .score-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 10px;
+    }
+    .score-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #0a2540;
+      margin: 10px 0;
+    }
+    .score-description {
+      font-size: 13px;
+      color: #718096;
+    }
+    .eclipse-alert {
+      background-color: #fff3cd;
+      border: 1px solid #ffecb5;
+      color: #856404;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      display: flex;
+      align-items: flex-start;
+    }
+    .eclipse-alert svg {
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(0,0,0,.1);
+      border-radius: 50%;
+      border-top-color: #0a2540;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Quadrant visualization styling */
+    .quadrant-container {
+      position: relative;
+      height: 400px;
+      border: 1px solid #ddd;
+      margin: 30px 0;
+      background-color: white;
+    }
+    
+    .quadrant-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 100%;
+    }
+    
+    .quadrant {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 15px;
+      position: relative;
+    }
+    
+    .quadrant-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #4a5568;
+    }
+    
+    .quadrant-entity {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #4a5568;
+      font-weight: 600;
+      z-index: 10;
+    }
+    
+    .quadrant-entity.you {
+      background-color: #ffefc1;
+      border: 2px solid #ffd254;
+    }
+    
+    .quadrant-entity.competitor {
+      background-color: #b2ddff;
+      border: 2px solid #4299e1;
+    }
+    
+    .axis-label {
+      position: absolute;
+      text-align: center;
+      font-size: 14px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+    
+    .x-axis {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+    }
+    
+    .y-axis {
+      position: absolute;
+      top: 50%;
+      left: -50px;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: center;
+    }
+    
+    /* Venn diagram styles */
+    .visibility-container {
+      margin-top: 40px;
+      text-align: center;
+    }
+    
+    .venn-diagram {
+      position: relative;
+      height: 300px;
+      margin: 0 auto;
+      width: 500px;
+      margin-bottom: 40px;
+    }
+    
+    .venn-circle {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 600;
+      font-size: 18px;
+      color: #4a5568;
+      width: 220px;
+      height: 220px;
+      top: 40px;
+    }
+    
+    .capability-circle {
+      background-color: #fffbdd;
+      border: 2px solid #ffeaa7;
+      left: 90px;
+      z-index: 1;
+    }
+    
+    .recognition-circle {
+      background-color: #000000;
+      color: white;
+      right: 90px;
+      z-index: 2;
+    }
+    
+    /* Diagnosis styles */
+    .diagnosis-container {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #0a2540;
+    }
+    
+    .diagnosis-title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #0a2540;
+    }
+    
+    .diagnosis-content {
+      color: #4a5568;
+    }
+    
+    /* Healthcare specialty selector */
+    #specialtyContainer {
+      margin-top: 15px;
+    }
+    
+    /* Competitor boss insight card */
+    .boss-insight {
+      background-color: #f0f9ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .boss-insight h3 {
+      margin-top: 0;
+      color: #0a2540;
+      font-size: 18px;
+    }
+
+    .boss-insight p {
+      color: #4a5568;
+      margin-bottom: 0;
+    }
+    
+    /* Data source note */
+    .data-source-note {
+      font-size: 12px;
+      color: #718096;
+      margin-top: 10px;
+      font-style: italic;
+    }
+    
+    .footer {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 14px;
+      color: #718096;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-header">
+    <h1>LABSOLUTELY.ai</h1>
+  </div>
+  
+  <div id="analysis-form" class="card">
+    <h2>Who's The Boss?</h2>
+    <p>See who's top of the pack in your industry and if your website truly conveys your expertise...</p>
+    <form id="urlForm">
+      <div>
+        <label for="url">Website URL:</label>
+        <input type="url" id="url" required placeholder="https://example.com">
+      </div>
+      <div>
+        <label for="industry">Industry/Sector:</label>
+        <select id="industry" required>
+          <option value="">Select an industry</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Construction">Builders/Construction</option>
+          <option value="Environmental">Environmental</option>
+          <option value="Technology">Technology</option>
+          <option value="Education">Education</option>
+          <option value="Finance">Finance</option>
+          <option value="Non-profit">Non-profit</option>
+          <option value="Professional Services">Professional Services</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <!-- Healthcare specialty selector - hidden by default -->
+      <div id="specialtyContainer" class="form-group hidden">
+        <label for="specialty">Healthcare Specialty:</label>
+        <select id="specialty">
+          <option value="">Select a specialty</option>
+          <option value="General Practice">General Practice</option>
+          <option value="Plastic Surgery">Plastic Surgery</option>
+          <option value="Cosmetic Surgery">Cosmetic Surgery</option>
+          <option value="Dentistry">Dentistry</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <button type="submit" id="analyze-btn">Free Authority Index</button>
+      <p style="font-size: 12px; text-align: center; margin-top: 10px;">AI-Powered Website Assessment</p>
+    </form>
+    
+    <div id="loading" class="hidden" style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 15px;">Analyzing your website and competitors... This may take a minute.</p>
+    </div>
+  </div>
+  
+  <div id="results" class="hidden">
+    <div class="card">
+      <h2>Authority Index Results</h2>
+      
+      <div class="scores-container">
+        <div class="score-card expertise">
+          <div class="score-label">Expertise Signals</div>
+          <div id="expertise-score" class="score-value">0</div>
+          <div class="score-description">How well your content demonstrates capability</div>
+        </div>
+        <div class="score-card authority">
+          <div class="score-label">Digital Authority</div>
+          <div id="authority-score" class="score-value">0</div>
+          <div class="score-description">Your online visibility and credibility</div>
+        </div>
+        <div class="score-card consistency">
+          <div class="score-label">Consistency Markers</div>
+          <div id="consistency-score" class="score-value">0</div>
+          <div class="score-description">Messaging coherence and brand voice</div>
+        </div>
+        <div class="score-card overall">
+          <div class="score-label">Overall Authority Index</div>
+          <div id="overall-score" class="score-value">0</div>
+          <div class="score-description">Your overall market position</div>
+        </div>
+      </div>
+      
+      <!-- Diagnosis section -->
+      <div id="diagnosis-container" class="diagnosis-container">
+        <div class="diagnosis-title">Diagnosis:</div>
+        <div id="diagnosis-content" class="diagnosis-content">
+          Analysis will appear here after processing your website.
+        </div>
+      </div>
+      
+      <!-- Competitor section -->
+      <div id="competitor-section">
+        <h3>HERE'S HOW YOU COMPARE</h3>
+        
+        <!-- Boss insight -->
+        <div id="boss-insight" class="boss-insight">
+          <h3 id="boss-title">Who's The Boss?</h3>
+          <p id="boss-message">Analysis will show which business has the strongest online presence.</p>
+        </div>
+        
+        <!-- Quadrant visualization -->
+        <div class="quadrant-container" id="competitor-quadrant">
+          <div class="quadrant-grid">
+            <div class="quadrant top-left">
+              <div class="quadrant-label">TRADITIONAL AUTHORITY</div>
+            </div>
+            <div class="quadrant top-right">
+              <div class="quadrant-label">DIGITAL AUTHORITY</div>
+            </div>
+            <div class="quadrant bottom-left">
+              <div class="quadrant-label">LIMITED VISIBILITY</div>
+            </div>
+            <div class="quadrant bottom-right">
+              <div class="quadrant-label">BORROWED AUTHORITY</div>
+            </div>
+          </div>
+          
+          <div class="axis-label x-axis">ONLINE VISIBILITY</div>
+          <div class="axis-label y-axis">BRAND AUTHORITY</div>
+        </div>
+        
+        <div class="data-source-note">
+          Calculated using website traffic/month, branded content in search, total social media followers and Google review scores.
+        </div>
+      </div>
+      
+      <!-- Venn diagram -->
+      <div class="visibility-container">
+        <h3>YOUR VISIBILITY</h3>
+        <div class="venn-diagram">
+          <div id="capability-circle" class="venn-circle capability-circle">
+            CAPABILITY
+          </div>
+          <div id="recognition-circle" class="venn-circle recognition-circle">
+            MARKET RECOGNITION
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Recommendations</h2>
+      <ul id="recommendations" class="recommendations"></ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Powered by Machine Learning. Help us improve: <a href="#">Provide Feedback</a></p>
+  </div>
+
+  <script>
+    // Show specialty selector when Healthcare is selected
+    document.getElementById('industry').addEventListener('change', function() {
+      const specialtyContainer = document.getElementById('specialtyContainer');
+      if (this.value === 'Healthcare') {
+        specialtyContainer.classList.remove('hidden');
+      } else {
+        specialtyContainer.classList.add('hidden');
+        document.getElementById('specialty').value = '';
+      }
+    });
+    
+    document.getElementById('urlForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const url = document.getElementById('url').value;
+      const industry = document.getElementById('industry').value;
+      const specialty = industry === 'Healthcare' ? 
+                       document.getElementById('specialty').value : '';
+      
+      // Show loading, hide form, disable button
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('results').classList.add('hidden');
+      document.getElementById('analyze-btn').disabled = true;
+      
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url, industry, specialty })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Analysis failed');
+        }
+        
+        const data = await response.json();
+        displayResults(data.analysis);
+        
+      } catch (error) {
+        alert('Error: ' + error.message);
+      } finally {
+        // Hide loading, enable button
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('analyze-btn').disabled = false;
+      }
+    });
+    
+    function displayResults(analysis) {
+      // Update scores
+      document.getElementById('expertise-score').textContent = analysis.expertiseSignals;
+      document.getElementById('authority-score').textContent = analysis.digitalAuthority;
+      document.getElementById('consistency-score').textContent = analysis.consistencyMarkers;
+      document.getElementById('overall-score').textContent = analysis.authorityIndex;
+      
+      // Update diagnosis
+      document.getElementById('diagnosis-content').textContent = analysis.diagnosis;
+      
+      // Update Venn diagram
+      updateVennDiagram(analysis.expertiseSignals, analysis.digitalAuthority);
+      
+      // Display recommendations
+      const recommendationsElement = document.getElementById('recommendations');
+      recommendationsElement.innerHTML = '';
+      
+      analysis.recommendations.forEach(rec => {
+        const li = document.createElement('li');
+        li.textContent = rec;
+        recommendationsElement.appendChild(li);
+      });
+      
+      // Display competitor information if available
+      if (analysis.competitors && analysis.competitors.length > 0) {
+        // Position all entities in the quadrant
+        positionEntitiesInQuadrant(
+          {
+            name: 'YOU',
+            expertiseScore: analysis.expertiseSignals,
+            authorityScore: analysis.digitalAuthority
+          },
+          analysis.competitors
+        );
+        
+        // Display boss insight if available
+        if (analysis.competitorInsights && analysis.competitorInsights.length > 0) {
+          const bossInsight = analysis.competitorInsights.find(insight => insight.type === 'competitor');
+          if (bossInsight) {
+            document.getElementById('boss-title').textContent = bossInsight.title;
+            document.getElementById('boss-message').textContent = bossInsight.message;
+          }
+        }
+      }
+      
+      // Show results
+      document.getElementById('results').classList.remove('hidden');
+      
+      // Hide the form
+      document.getElementById('analysis-form').classList.add('hidden');
+    }
+    
+    function positionEntitiesInQuadrant(yourSite, competitors) {
+      const quadrant = document.getElementById('competitor-quadrant');
+      
+      // Clear existing markers
+      const existingMarkers = quadrant.querySelectorAll('.quadrant-entity');
+      existingMarkers.forEach(marker => marker.remove());
+      
+      // Position your website
+      const yourMarker = document.createElement('div');
+      yourMarker.className = 'quadrant-entity you';
+      yourMarker.textContent = 'YOU';
+      
+      // Calculate position ensuring it's within bounds
+      const yourXPos = Math.min(95, Math.max(5, (yourSite.authorityScore / 100) * 100));
+      const yourYPos = Math.min(95, Math.max(5, 100 - (yourSite.expertiseScore / 100) * 100));
+      
+      yourMarker.style.left = `${yourXPos}%`;
+      yourMarker.style.top = `${yourYPos}%`;
+      quadrant.appendChild(yourMarker);
+      
+      // Add competitors to the quadrant
+      competitors.forEach((competitor, index) => {
+        const competitorMarker = document.createElement('div');
+        competitorMarker.className = 'quadrant-entity competitor';
+        
+        // Show abbreviated name if too long
+        const displayName = competitor.name.length > 12 ? 
+                          competitor.name.substring(0, 10) + '...' : 
+                          competitor.name;
+        competitorMarker.textContent = displayName;
+        
+        // If this is "the boss", ensure it's positioned in a dominant position
+        let compXPos, compYPos;
+        
+        if (competitor.isBoss) {
+          // The boss should be in a position of strength, ideally Digital Authority
+          compXPos = Math.min(95, Math.max(65, (competitor.authorityScore || 75) / 100 * 100));
+          compYPos = Math.min(50, Math.max(5, 100 - ((competitor.expertiseScore || 70) / 100 * 100)));
+          
+          // Make it slightly larger
+          competitorMarker.style.width = '85px';
+          competitorMarker.style.height = '85px';
+          competitorMarker.style.zIndex = '20';
+        } else {
+          // Regular competitors
+          compXPos = Math.min(95, Math.max(5, (competitor.authorityScore || 50) / 100 * 100));
+          compYPos = Math.min(95, Math.max(5, 100 - ((competitor.expertiseScore || 50) / 100 * 100)));
+          
+          // Make simulated competitors slightly transparent
+          if (competitor.isSimulated) {
+            competitorMarker.style.opacity = '0.7';
+            competitorMarker.style.transform = 'translate(-50%, -50%) scale(0.85)';
+          }
+        }
+        
+        competitorMarker.style.left = `${compXPos}%`;
+        competitorMarker.style.top = `${compYPos}%`;
+        
+        // Add tooltip with full name
+        competitorMarker.title = competitor.name;
+        
+        quadrant.appendChild(competitorMarker);
+      });
+    }
+    
+    function updateVennDiagram(expertiseScore, authorityScore) {
+      const capabilityCircle = document.getElementById('capability-circle');
+      const recognitionCircle = document.getElementById('recognition-circle');
+      
+      // Base size for the circles
+      const baseSize = 220;
+      
+      // Calculate size adjustment based on scores (±20px)
+      const capabilitySizeAdjust = ((expertiseScore / 100) * 40) - 20;
+      const recognitionSizeAdjust = ((authorityScore / 100) * 40) - 20;
+      
+      // Calculate final sizes (ensure minimum size)
+      const capabilitySize = Math.max(180, baseSize + capabilitySizeAdjust);
+      const recognitionSize = Math.max(180, baseSize + recognitionSizeAdjust);
+      
+      // Calculate overlap based on score similarity
+      // More similar scores = more overlap
+      const scoreDifference = Math.abs(expertiseScore - authorityScore);
+      const baseOverlap = 90; // base overlap in pixels
+      const overlapAdjustment = 80 * (1 - (scoreDifference / 100));
+      const totalOverlap = Math.max(40, baseOverlap + overlapAdjustment);
+      
+      // Calculate positions for the circles based on diagram width
+      const diagramWidth = 500;
+      
+      // Adjust positions based on circle sizes and desired overlap
+      const centerPoint = diagramWidth / 2;
+      const capabilityLeft = centerPoint - (capabilitySize / 2) - ((capabilitySize - totalOverlap) / 2);
+      const recognitionRight = centerPoint - (recognitionSize / 2) + ((recognitionSize - totalOverlap) / 2);
+      
+      // Set sizes and positions
+      capabilityCircle.style.width = `${capabilitySize}px`;
+      capabilityCircle.style.height = `${capabilitySize}px`;
+      capabilityCircle.style.left = `${capabilityLeft}px`;
+      
+      recognitionCircle.style.width = `${recognitionSize}px`;
+      recognitionCircle.style.height = `${recognitionSize}px`;
+      recognitionCircle.style.right = `${recognitionRight}px`;
+      
+      // Adjust z-index based on which score is higher
+      if (expertiseScore > authorityScore) {
+        capabilityCircle.style.zIndex = 2;
+        recognitionCircle.style.zIndex = 1;
+      } else {
+        capabilityCircle.style.zIndex = 1;
+        recognitionCircle.style.zIndex = 2;
+      }
+    }
+  </script>
+</body>
+</html>
