@@ -462,38 +462,56 @@ async function fetchPageContent(url) {
   }
 }
 
-// Function to detect Australian-specific compliance markers
-function detectAustralianComplianceMarkers(content) {
+/**
+ * Detects compliance markers based on industry-specific regulatory terms
+ * @param {string} content - The webpage content
+ * @param {string} industry - The industry category
+ * @returns {number} - Compliance score (0-50)
+ */
+function detectIndustryComplianceMarkers(content, industry) {
+  const industryData = industryRegulations[industry];
+  
+  if (!industryData) {
+    return 0;
+  }
+  
   let complianceScore = 0;
   
-  // Check for mentions of Australian regulatory bodies
-  australianHealthcareRegulations.regulatoryBodies.forEach(body => {
-    const regex = new RegExp(`\\b${body}\\b`, 'gi');
-    const matches = content.match(regex);
-    if (matches) {
-      complianceScore += matches.length * 5;
-    }
-  });
+  // Check for mentions of industry-specific regulatory bodies
+  if (industryData.regulatoryBodies) {
+    industryData.regulatoryBodies.forEach(body => {
+      const regex = new RegExp(`\\b${body}\\b`, 'gi');
+      const matches = content.match(regex);
+      if (matches) {
+        complianceScore += matches.length * 5;
+      }
+    });
+  }
   
-  // Check for Australian credentials
-  australianHealthcareRegulations.credentials.forEach(credential => {
-    const regex = new RegExp(`\\b${credential}\\b`, 'gi');
-    const matches = content.match(regex);
-    if (matches) {
-      complianceScore += matches.length * 4;
-    }
-  });
+  // Check for industry-specific credentials
+  if (industryData.credentials) {
+    industryData.credentials.forEach(credential => {
+      const regex = new RegExp(`\\b${credential}\\b`, 'gi');
+      const matches = content.match(regex);
+      if (matches) {
+        complianceScore += matches.length * 4;
+      }
+    });
+  }
   
-  // Check for compliance terms
-  australianHealthcareRegulations.complianceTerms.forEach(term => {
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    const matches = content.match(regex);
-    if (matches) {
-      complianceScore += matches.length * 3;
-    }
-  });
+  // Check for industry-specific compliance terms
+  if (industryData.complianceTerms) {
+    industryData.complianceTerms.forEach(term => {
+      const regex = new RegExp(`\\b${term}\\b`, 'gi');
+      const matches = content.match(regex);
+      if (matches) {
+        complianceScore += matches.length * 3;
+      }
+    });
+  }
   
   return Math.min(50, complianceScore); // Cap at 50 points
+}
 }
 
 // Adjust authority scoring based on Australian regulations
