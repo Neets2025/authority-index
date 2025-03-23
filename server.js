@@ -514,27 +514,45 @@ function detectIndustryComplianceMarkers(content, industry) {
 }
 }
 
-// Adjust authority scoring based on Australian regulations
+/**
+ * Adjusts authority scores based on industry-specific regulations
+ * @param {number} authorityScore - Original authority score
+ * @param {string} industry - The industry category
+ * @param {string} specialty - Optional specialty within the industry
+ * @returns {number} - Adjusted authority score
+ */
 function adjustAuthorityForRegulations(authorityScore, industry, specialty) {
   // Base adjustment
   let adjustedScore = authorityScore;
+  const industryData = industryRegulations[industry];
   
-  // Check if this is a regulated healthcare specialty with review limitations
-  if (industry === "Healthcare" && 
-      australianHealthcareRegulations.reviewLimitations[specialty]) {
-    
+  if (!industryData) {
+    return authorityScore;
+  }
+  
+  // Check if this is a regulated industry with review limitations
+  let hasReviewLimitations = false;
+  
+  if (industryData.reviewLimitations) {
+    if (specialty && industryData.reviewLimitations[specialty]) {
+      hasReviewLimitations = true;
+    } else if (industryData.reviewLimitations["All"]) {
+      hasReviewLimitations = true;
+    }
+  }
+  
+  if (hasReviewLimitations) {
     // For specialties where reviews are limited by regulation
     // We need to adjust expectations for social proof
     
-    // 1. Increase the baseline score
+    // 1. Increase the baseline score to compensate for limitations
     adjustedScore = Math.max(40, adjustedScore);
     
     // 2. Apply a scaling factor to compensate for review limitations
-    // For plastic surgeons who can't easily collect testimonials
     const scalingFactor = 1.25; // Compensate by 25%
     adjustedScore = Math.min(100, adjustedScore * scalingFactor);
     
-    console.log(`Adjusted authority score for regulated specialty ${specialty} from ${authorityScore} to ${adjustedScore}`);
+    console.log(`Adjusted authority score for regulated ${industry}/${specialty} from ${authorityScore} to ${adjustedScore}`);
   }
   
   return Math.round(adjustedScore);
