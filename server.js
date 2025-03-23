@@ -556,7 +556,27 @@ function adjustAuthorityForRegulations(authorityScore, industry, specialty) {
   }
   
   return Math.round(adjustedScore);
+}/**
+ * Gets industry-specific weight adjustments for the Authority Index calculation
+ * @param {string} industry - The industry category
+ * @returns {Object} - Weight adjustment factors
+ */
+function getIndustryWeights(industry) {
+  const industryData = industryRegulations[industry] || industryRegulations["Default"];
+  
+  if (industryData && industryData.scoreWeightAdjustments) {
+    return industryData.scoreWeightAdjustments;
+  }
+  
+  // Default weights if industry not found
+  return {
+    expertiseWeight: 0.45,
+    authorityWeight: 0.35,
+    consistencyWeight: 0.2
+  };
 }
+
+
 
 // Function to analyze website content for Authority Index
 function analyzeAuthorityIndex(content, industry, specialty = "") {
