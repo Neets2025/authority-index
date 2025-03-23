@@ -160,6 +160,79 @@ const industryRegulations = {
       consistencyWeight: 0.2   // Unchanged
     }
   },
+
+  /**
+ * Industry-specific terminology collections
+ * Used for expertise signal detection
+ */
+const industryTerminology = {
+  "Healthcare": {
+    generalTerms: [
+      "patient", "care", "health", "treatment", "diagnosis", 
+      "medical", "clinical", "healthcare", "procedure", "consultation"
+    ],
+    specialtyTerms: {
+      "Plastic Surgery": [
+        "reconstruction", "cosmetic", "aesthetic", "surgery", "procedure",
+        "enhancement", "augmentation", "reduction", "lift", "reshape"
+      ],
+      "Cosmetic Surgery": [
+        "aesthetic", "enhancement", "beauty", "cosmetic", "elective",
+        "procedure", "rejuvenation", "transformation", "improvement", "appearance"
+      ],
+      "General Practice": [
+        "primary care", "preventive", "chronic", "family medicine", "checkup",
+        "vaccination", "screening", "referral", "holistic", "wellness"
+      ],
+      "Dentistry": [
+        "dental", "teeth", "oral health", "hygiene", "cleaning",
+        "filling", "crown", "implant", "whitening", "orthodontic"
+      ]
+    }
+  },
+  
+  "Construction": {
+    generalTerms: [
+      "build", "construction", "project", "design", "renovation",
+      "contractor", "building", "structure", "quality", "materials"
+    ]
+  },
+  
+  "Environmental": {
+    generalTerms: [
+      "sustainable", "environment", "eco-friendly", "conservation", "green",
+      "renewable", "efficiency", "impact", "assessment", "management"
+    ]
+  },
+  
+  "Technology": {
+    generalTerms: [
+      "software", "development", "solution", "innovation", "digital",
+      "technology", "system", "application", "platform", "integration"
+    ]
+  },
+  
+  "Finance": {
+    generalTerms: [
+      "financial", "investment", "planning", "wealth", "tax",
+      "retirement", "portfolio", "strategy", "risk", "management"
+    ]
+  },
+  
+  "Legal": {
+    generalTerms: [
+      "legal", "law", "advice", "counsel", "representation",
+      "litigation", "contract", "rights", "obligation", "compliance"
+    ]
+  },
+  
+  "Real Estate": {
+    generalTerms: [
+      "property", "real estate", "home", "buyer", "seller",
+      "market", "agent", "listing", "sale", "investment"
+    ]
+  }
+};
   
   // Real Estate industry regulatory context
   "Real Estate": {
