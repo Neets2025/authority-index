@@ -30,16 +30,174 @@ const australianHealthcareRegulations = {
     "TGA", "Healthcare Complaints Commission"
   ],
   
-  // Australian healthcare credentials
-  credentials: [
-    "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
-    "Registered Medical Practitioner"
-  ],
+//===================================
+// INDUSTRY REGULATORY DATA
+//===================================
+
+/**
+ * Industry-specific regulatory and terminology data
+ * Used to adjust analysis based on industry requirements
+ */
+const industryRegulations = {
+  // Australian healthcare regulatory context
+  "Healthcare": {
+    // Regulatory bodies for validation
+    regulatoryBodies: [
+      "AHPRA", "Medical Board of Australia", "RACS", "ASPS", "ASAPS", 
+      "TGA", "Healthcare Complaints Commission"
+    ],
+    
+    // Industry-specific credentials
+    credentials: [
+      "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
+      "Registered Medical Practitioner"
+    ],
+    
+    // Terms related to compliance
+    complianceTerms: [
+      "AHPRA registered", "Medical Board of Australia", "code of conduct",
+      "Australian Standards", "health practitioner regulation"
+    ],
+    
+    // Review limitations by specialty
+    reviewLimitations: {
+      "Plastic Surgery": true,  // Has significant review limitations
+      "Cosmetic Surgery": true, // Has significant review limitations
+      "General Practice": false,
+      "Dentistry": false
+    },
+    
+    // Weight adjustments for industry
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.5,     // Increased from 0.45 base
+      authorityWeight: 0.3,     // Decreased from 0.35 base
+      consistencyWeight: 0.2    // Unchanged
+    }
+  },
   
-  // Terms related to Australian compliance
-  complianceTerms: [
-    "AHPRA registered", "Medical Board of Australia", "code of conduct",
-    "Australian Standards", "health practitioner regulation"
+  // Finance industry regulatory context
+  "Finance": {
+    regulatoryBodies: [
+      "ASIC", "AFSL", "Australian Financial Services License", "APRA",
+      "Financial Adviser Standards and Ethics Authority", "FASEA"
+    ],
+    
+    credentials: [
+      "CFP", "Certified Financial Planner", "CA", "CPA", "RG146",
+      "Financial Adviser", "Authorised Representative"
+    ],
+    
+    complianceTerms: [
+      "AFSL", "ABN", "Australian Financial Services License", "disclosure",
+      "Statement of Advice", "Financial Services Guide", "compliant"
+    ],
+    
+    reviewLimitations: {
+      "Financial Planning": true,
+      "Mortgage Broking": true,
+      "Investment": true
+    },
+    
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.45,    // Unchanged
+      authorityWeight: 0.3,     // Decreased from 0.35 base
+      consistencyWeight: 0.25   // Increased from 0.2 base
+    }
+  },
+  
+  // Legal services regulatory context
+  "Legal": {
+    regulatoryBodies: [
+      "Law Society", "Legal Services Commission", "Legal Practice Board",
+      "Law Institute", "Bar Association"
+    ],
+    
+    credentials: [
+      "LLB", "JD", "Solicitor", "Barrister", "Attorney", "Principal",
+      "Partner", "Legal Practitioner"
+    ],
+    
+    complianceTerms: [
+      "practicing certificate", "admitted", "legal practitioner", 
+      "professional standards", "ethics", "legal profession"
+    ],
+    
+    reviewLimitations: {
+      "All": true // Legal services generally have review limitations
+    },
+    
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.5,    // Increased from 0.45 base
+      authorityWeight: 0.25,   // Decreased from 0.35 base
+      consistencyWeight: 0.25  // Increased from 0.2 base
+    }
+  },
+  
+  // Construction industry regulatory context
+  "Construction": {
+    regulatoryBodies: [
+      "Building Commission", "Fair Trading", "Master Builders",
+      "Housing Industry Association", "Building Practitioners Board"
+    ],
+    
+    credentials: [
+      "Licensed Builder", "Registered", "Certified", "Master Builder",
+      "Building Practitioner"
+    ],
+    
+    complianceTerms: [
+      "licensed", "insured", "warranty", "building code", "compliance",
+      "Australian Standards", "regulations"
+    ],
+    
+    reviewLimitations: {
+      "All": false // Construction generally doesn't have review limitations
+    },
+    
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.4,    // Decreased from 0.45 base
+      authorityWeight: 0.4,    // Increased from 0.35 base
+      consistencyWeight: 0.2   // Unchanged
+    }
+  },
+  
+  // Real Estate industry regulatory context
+  "Real Estate": {
+    regulatoryBodies: [
+      "Real Estate Institute", "Estate Agents Authority", "Consumer Affairs",
+      "Fair Trading", "Property Council"
+    ],
+    
+    credentials: [
+      "Licensed Agent", "Licensed Real Estate Agent", "REIA", "Registered",
+      "Auctioneer"
+    ],
+    
+    complianceTerms: [
+      "license number", "licensed", "member of", "professional standards",
+      "code of conduct", "registered"
+    ],
+    
+    reviewLimitations: {
+      "All": false // Real Estate generally doesn't have review limitations
+    },
+    
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.4,    // Decreased from 0.45 base
+      authorityWeight: 0.4,    // Increased from 0.35 base
+      consistencyWeight: 0.2   // Unchanged
+    }
+  },
+  
+  // Default weights for industries without specific configurations
+  "Default": {
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.45,
+      authorityWeight: 0.35,
+      consistencyWeight: 0.2
+    }
+  }
+};
   ],
   
   // Review limitations
