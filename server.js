@@ -1032,7 +1032,13 @@ function getIndustryTerms(industry, specialty = "") {
   return terms[industry] || [];
 }
 
-// Function to generate competitive insights
+/**
+ * Generates competitive insights based on analysis of competitors
+ * @param {Object} userData - User's website data
+ * @param {Array} competitors - List of competitor websites and their analysis
+ * @param {string} industry - The industry category
+ * @returns {Array} - List of competitive insights
+ */
 function generateCompetitiveInsights(userData, competitors, industry) {
   const insights = [];
   
@@ -1044,8 +1050,8 @@ function generateCompetitiveInsights(userData, competitors, industry) {
       const aGoogleScore = (a.googleData?.userRatingsTotal || 0) * (a.googleData?.rating || 3) / 5;
       const bGoogleScore = (b.googleData?.userRatingsTotal || 0) * (b.googleData?.rating || 3) / 5;
       
-      const aSeoScore = (a.seoData?.traffic || 0) / 100 + (a.seoData?.socialFollowers || 0) / 50;
-      const bSeoScore = (b.seoData?.traffic || 0) / 100 + (b.seoData?.socialFollowers || 0) / 50;
+      const aSeoScore = (a.seoData?.traffic || 0) / 100 + (a.seoData?.keywords || 0) / 50 + (a.seoData?.backlinks || 0) / 20 + (a.seoData?.socialFollowers || 0) / 50;
+      const bSeoScore = (b.seoData?.traffic || 0) / 100 + (b.seoData?.keywords || 0) / 50 + (b.seoData?.backlinks || 0) / 20 + (b.seoData?.socialFollowers || 0) / 50;
       
       const aAuthorityScore = a.authorityScore || 50;
       const bAuthorityScore = b.authorityScore || 50;
@@ -1067,7 +1073,7 @@ function generateCompetitiveInsights(userData, competitors, industry) {
       // Check which metric is highest
       if (topCompetitor.seoData && topCompetitor.seoData.traffic && topCompetitor.seoData.traffic > 1000) {
         competitorStrength = "SEO and website traffic";
-        strengthData = `with approximately ${topCompetitor.seoData.traffic} monthly visitors`;
+        strengthData = `with approximately ${topCompetitor.seoData.traffic.toLocaleString()} monthly visitors`;
       } else if (topCompetitor.googleData && topCompetitor.googleData.userRatingsTotal > 15) {
         // Use industry-specific terminology for reviews
         if (industry === "Healthcare") {
@@ -1076,6 +1082,10 @@ function generateCompetitiveInsights(userData, competitors, industry) {
           competitorStrength = "client reviews and portfolio showcases";
         } else if (industry === "Finance") {
           competitorStrength = "client testimonials and case studies";
+        } else if (industry === "Legal") {
+          competitorStrength = "client reviews and case outcomes";
+        } else if (industry === "Real Estate") {
+          competitorStrength = "client reviews and property listings";
         } else {
           competitorStrength = "customer reviews and testimonials";
         }
@@ -1083,16 +1093,37 @@ function generateCompetitiveInsights(userData, competitors, industry) {
         strengthData = `with ${topCompetitor.googleData.userRatingsTotal} Google reviews (${topCompetitor.googleData.rating}/5 stars)`;
       } else if (topCompetitor.seoData && topCompetitor.seoData.socialFollowers && topCompetitor.seoData.socialFollowers > 500) {
         competitorStrength = "social media presence";
-        strengthData = `with approximately ${topCompetitor.seoData.socialFollowers} social media followers`;
+        strengthData = `with approximately ${topCompetitor.seoData.socialFollowers.toLocaleString()} social media followers`;
+      } else if (topCompetitor.seoData && topCompetitor.seoData.backlinks && topCompetitor.seoData.backlinks > 50) {
+        competitorStrength = "link building and industry references";
+        strengthData = `with ${topCompetitor.seoData.backlinks} websites linking to them`;
       } else {
         competitorStrength = "online marketing";
         strengthData = "giving them a competitive advantage";
       }
       
+      // Check gap between top competitor and user's site (if available)
+      let competitiveGap = "";
+      if (userData.expertiseScore && userData.authorityScore &&
+          topCompetitor.expertiseScore && topCompetitor.authorityScore) {
+          
+        const expertiseGap = topCompetitor.expertiseScore - userData.expertiseScore;
+        const authorityGap = topCompetitor.authorityScore - userData.authorityScore;
+        
+        if (expertiseGap > 20 && authorityGap > 20) {
+          competitiveGap = " They significantly outperform in both expertise demonstration and digital authority.";
+        } else if (expertiseGap > 20) {
+          competitiveGap = " Their main advantage is in expertise demonstration on their website.";
+        } else if (authorityGap > 20) {
+          competitiveGap = " Their primary advantage is in online visibility and digital authority.";
+        }
+      }
+      
+      // Craft the insight message
       insights.push({
         type: "competitor",
         title: `${topCompetitor.name} Is The Boss`,
-        message: `${topCompetitor.name} is investing in ${competitorStrength}, ${strengthData} and giving them a competitive advantage in online visibility.`
+        message: `${topCompetitor.name} is investing in ${competitorStrength}, ${strengthData} and giving them a competitive advantage in online visibility.${competitiveGap}`
       });
       
       // Mark this competitor as "the boss"
@@ -1112,6 +1143,86 @@ function generateCompetitiveInsights(userData, competitors, industry) {
       }
     }
   }
+  
+  // Generate industry-specific insights
+  if (industry === "Healthcare") {
+    insights.push({
+      type: "industry",
+      title: "Healthcare Authority",
+      message: "In healthcare, balancing clinical expertise with digital visibility is critical for establishing trust while complying with Australian regulations."
+    });
+    
+    // Add AHPRA insight for regulated specialties
+    const specialty = userData.specialty;
+    if (specialty === "Plastic Surgery" || specialty === "Cosmetic Surgery") {
+      insights.push({
+        type: "regulation",
+        title: "AHPRA Compliance",
+        message: "For plastic and cosmetic surgeons, AHPRA guidelines limit use of patient testimonials and before/after photos. Focus on educational content and your credentials instead."
+      });
+    }
+  } else if (industry === "Construction") {
+    insights.push({
+      type: "industry",
+      title: "Construction Credibility",
+      message: "In construction, showcasing completed projects and proven results builds more credibility than general marketing claims."
+    });
+  } else if (industry === "Environmental") {
+    insights.push({
+      type: "industry",
+      title: "Environmental Impact",
+      message: "Environmental services require demonstrating both expertise and measurable outcomes - focus on case studies with quantifiable results."
+    });
+  } else if (industry === "Finance") {
+    insights.push({
+      type: "industry",
+      title: "Finance Trust Factors",
+      message: "In financial services, clear display of credentials, AFSL information, and educational content builds more trust than marketing claims."
+    });
+  } else if (industry === "Legal") {
+    insights.push({
+      type: "industry",
+      title: "Legal Authority",
+      message: "For legal services, demonstrating specialized expertise and successful outcomes (while maintaining client confidentiality) is key to digital authority."
+    });
+  } else if (industry === "Real Estate") {
+    insights.push({
+      type: "industry",
+      title: "Property Expertise",
+      message: "In real estate, local market knowledge and property success stories create more authority than general promotional content."
+    });
+  }
+  
+  // Generate eclipse insight if applicable
+  if (userData.expertiseSignals >= 65 && 
+      userData.digitalAuthority < 50 && 
+      (userData.expertiseSignals - userData.digitalAuthority) >= 20) {
+    
+    insights.push({
+      type: "eclipse",
+      title: "Expertise Eclipse Detected",
+      message: "Your expertise is being eclipsed by low digital visibility. Your ability significantly outshines your online presence, making it difficult for potential clients to discover your services."
+    });
+  }
+  
+  // Return top insights (but always include the competitor insight if available)
+  const competitorInsight = insights.find(i => i.type === "competitor");
+  const eclipseInsight = insights.find(i => i.type === "eclipse");
+  const otherInsights = insights.filter(i => i.type !== "competitor" && i.type !== "eclipse");
+  
+  // Prioritize the order: competitor first, eclipse second, then others
+  let prioritizedInsights = [];
+  
+  if (competitorInsight) {
+    prioritizedInsights.push(competitorInsight);
+  }
+  
+  if (eclipseInsight) {
+    prioritizedInsights.push(eclipseInsight);
+  }
+  
+  return [...prioritizedInsights, ...otherInsights].slice(0, 3); // Return top 3 insights max
+}
   
   // Generate industry-specific insights
   if (industry === "Healthcare") {
