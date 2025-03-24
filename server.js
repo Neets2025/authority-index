@@ -23,21 +23,6 @@ app.use(express.static('public'));
 const PORT = process.env.PORT || 3000;
 
 // Australian healthcare regulatory context
-const industryRegulations.Healthcare = {
-  // Australian healthcare regulatory bodies
-  regulatoryBodies: [
-    "AHPRA", "Medical Board of Australia", "RACS", "ASPS", "ASAPS", 
-    "TGA", "Healthcare Complaints Commission"
-  ],
-  
-//===================================
-// INDUSTRY REGULATORY DATA
-//===================================
-
-/**
- * Industry-specific regulatory and terminology data
- * Used to adjust analysis based on industry requirements
- */
 const industryRegulations = {
   // Australian healthcare regulatory context
   "Healthcare": {
@@ -47,6 +32,33 @@ const industryRegulations = {
       "TGA", "Healthcare Complaints Commission"
     ],
     
+    // Industry-specific credentials
+    credentials: [
+      "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
+      "Registered Medical Practitioner"
+    ],
+    
+    // Terms related to compliance
+    complianceTerms: [
+      "AHPRA registered", "Medical Board of Australia", "code of conduct",
+      "Australian Standards", "health practitioner regulation"
+    ],
+    
+    // Review limitations by specialty
+    reviewLimitations: {
+      "Plastic Surgery": true,  // Has significant review limitations
+      "Cosmetic Surgery": true, // Has significant review limitations
+      "General Practice": false,
+      "Dentistry": false
+    },
+    
+    // Weight adjustments for industry
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.5,     // Increased from 0.45 base
+      authorityWeight: 0.3,     // Decreased from 0.35 base
+      consistencyWeight: 0.2    // Unchanged
+    }
+  },
     // Industry-specific credentials
     credentials: [
       "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
