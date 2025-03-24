@@ -23,164 +23,130 @@ app.use(express.static('public'));
 const PORT = process.env.PORT || 3000;
 
 // Australian healthcare regulatory context
-const industryRegulations = {
-  "Healthcare": {
-    regulatoryBodies: [
-      "AHPRA", "Medical Board of Australia", "RACS", "ASPS", "ASAPS", 
-      "TGA", "Healthcare Complaints Commission"
-    ],
-    credentials: [
-      "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
-      "Registered Medical Practitioner"
-    ],
-    complianceTerms: [
-      "AHPRA registered", "Medical Board of Australia", "code of conduct",
-      "Australian Standards", "health practitioner regulation"
-    ],
-    reviewLimitations: {
-      "Plastic Surgery": true,
-      "Cosmetic Surgery": true,
-      "General Practice": false,
-      "Dentistry": false
-    },
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.5,
-      authorityWeight: 0.3,
-      consistencyWeight: 0.2
-    }
-  },
-  "Finance": {
-    regulatoryBodies: [
-      "ASIC", "AFSL", "Australian Financial Services License", "APRA",
-      "Financial Adviser Standards and Ethics Authority", "FASEA"
-    ],
-    credentials: [
-      "CFP", "Certified Financial Planner", "CA", "CPA", "RG146",
-      "Financial Adviser", "Authorised Representative"
-    ],
-    complianceTerms: [
-      "AFSL", "ABN", "Australian Financial Services License", "disclosure",
-      "Statement of Advice", "Financial Services Guide", "compliant"
-    ],
-    reviewLimitations: {
-      "Financial Planning": true,
-      "Mortgage Broking": true,
-      "Investment": true
-    },
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.45,
-      authorityWeight: 0.3,
-      consistencyWeight: 0.25
-    }
-  },
-  "Legal": {
-    regulatoryBodies: [
-      "Law Society", "Legal Services Commission", "Legal Practice Board",
-      "Law Institute", "Bar Association"
-    ],
-    credentials: [
-      "LLB", "JD", "Solicitor", "Barrister", "Attorney", "Principal",
-      "Partner", "Legal Practitioner"
-    ],
-    complianceTerms: [
-      "practicing certificate", "admitted", "legal practitioner", 
-      "professional standards", "ethics", "legal profession"
-    ],
-    reviewLimitations: {
-      "All": true
-    },
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.5,
-      authorityWeight: 0.25,
-      consistencyWeight: 0.25
-    }
-  },
-  "Construction": {
-    regulatoryBodies: [
-      "Building Commission", "Fair Trading", "Master Builders",
-      "Housing Industry Association", "Building Practitioners Board"
-    ],
-    credentials: [
-      "Licensed Builder", "Registered", "Certified", "Master Builder",
-      "Building Practitioner"
-    ],
-    complianceTerms: [
-      "licensed", "insured", "warranty", "building code", "compliance",
-      "Australian Standards", "regulations"
-    ],
-    reviewLimitations: {
-      "All": false
-    },
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.4,
-      authorityWeight: 0.4,
-      consistencyWeight: 0.2
-    }
-  },
-  "Real Estate": {
-    regulatoryBodies: [
-      "Real Estate Institute", "Estate Agents Authority", "Consumer Affairs",
-      "Fair Trading", "Property Council"
-    ],
-    credentials: [
-      "Licensed Agent", "Licensed Real Estate Agent", "REIA", "Registered",
-      "Auctioneer"
-    ],
-    complianceTerms: [
-      "license number", "licensed", "member of", "professional standards",
-      "code of conduct", "registered"
-    ],
-    reviewLimitations: {
-      "All": false
-    },
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.4,
-      authorityWeight: 0.4,
-      consistencyWeight: 0.2
-    }
-  },
-  "Default": {
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.45,
-      authorityWeight: 0.35,
-      consistencyWeight: 0.2
-    }
-  }
-};
-};
-};
-  ],
-  
-  // Review limitations
-  reviewLimitations: {
-    "Plastic Surgery": true,  // Has significant review limitations
-    "Cosmetic Surgery": true, // Has significant review limitations
-    "General Practice": false,
-    "Dentistry": false
-  }
-};
-
-// Function to fetch content from DataForSEO
-async function fetchContentFromDataForSEO(url) {
-  try {
-    console.log(`Fetching content from DataForSEO for ${url}...`);
-    
-    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
-      throw new Error('DataForSEO credentials not configured');
-    }
-    
-    // Format the request body according to DataForSEO's specifications
-    const requestData = [{
-      url: url,
-      enable_javascript: true
-    }];
-    
-    // Using direct authentication in headers as recommended by DataForSEO
-    const authString = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
-    
-    const response = await axios({
-      method: 'post',
-      url: 'https://api.dataforseo.com/v3/on_page/instant_pages',
+26| const industryRegulations = {
+27|   "Healthcare": {
+28|     regulatoryBodies: [
+29|       "AHPRA", "Medical Board of Australia", "RACS", "ASPS", "ASAPS", 
+30|       "TGA", "Healthcare Complaints Commission"
+31|     ],
+32|     credentials: [
+33|       "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
+34|       "Registered Medical Practitioner"
+35|     ],
+36|     complianceTerms: [
+37|       "AHPRA registered", "Medical Board of Australia", "code of conduct",
+38|       "Australian Standards", "health practitioner regulation"
+39|     ],
+40|     reviewLimitations: {
+41|       "Plastic Surgery": true,
+42|       "Cosmetic Surgery": true,
+43|       "General Practice": false,
+44|       "Dentistry": false
+45|     },
+46|     scoreWeightAdjustments: {
+47|       expertiseWeight: 0.5,
+48|       authorityWeight: 0.3,
+49|       consistencyWeight: 0.2
+50|     }
+51|   },
+52|   "Finance": {
+53|     regulatoryBodies: [
+54|       "ASIC", "AFSL", "Australian Financial Services License", "APRA",
+55|       "Financial Adviser Standards and Ethics Authority", "FASEA"
+56|     ],
+57|     credentials: [
+58|       "CFP", "Certified Financial Planner", "CA", "CPA", "RG146",
+59|       "Financial Adviser", "Authorised Representative"
+60|     ],
+61|     complianceTerms: [
+62|       "AFSL", "ABN", "Australian Financial Services License", "disclosure",
+63|       "Statement of Advice", "Financial Services Guide", "compliant"
+64|     ],
+65|     reviewLimitations: {
+66|       "Financial Planning": true,
+67|       "Mortgage Broking": true,
+68|       "Investment": true
+69|     },
+70|     scoreWeightAdjustments: {
+71|       expertiseWeight: 0.45,
+72|       authorityWeight: 0.3,
+73|       consistencyWeight: 0.25
+74|     }
+75|   },
+76|   "Legal": {
+77|     regulatoryBodies: [
+78|       "Law Society", "Legal Services Commission", "Legal Practice Board",
+79|       "Law Institute", "Bar Association"
+80|     ],
+81|     credentials: [
+82|       "LLB", "JD", "Solicitor", "Barrister", "Attorney", "Principal",
+83|       "Partner", "Legal Practitioner"
+84|     ],
+85|     complianceTerms: [
+86|       "practicing certificate", "admitted", "legal practitioner", 
+87|       "professional standards", "ethics", "legal profession"
+88|     ],
+89|     reviewLimitations: {
+90|       "All": true
+91|     },
+92|     scoreWeightAdjustments: {
+93|       expertiseWeight: 0.5,
+94|       authorityWeight: 0.25,
+95|       consistencyWeight: 0.25
+96|     }
+97|   },
+98|   "Construction": {
+99|     regulatoryBodies: [
+100|       "Building Commission", "Fair Trading", "Master Builders",
+101|       "Housing Industry Association", "Building Practitioners Board"
+102|     ],
+103|     credentials: [
+104|       "Licensed Builder", "Registered", "Certified", "Master Builder",
+105|       "Building Practitioner"
+106|     ],
+107|     complianceTerms: [
+108|       "licensed", "insured", "warranty", "building code", "compliance",
+109|       "Australian Standards", "regulations"
+110|     ],
+111|     reviewLimitations: {
+112|       "All": false
+113|     },
+114|     scoreWeightAdjustments: {
+115|       expertiseWeight: 0.4,
+116|       authorityWeight: 0.4,
+117|       consistencyWeight: 0.2
+118|     }
+119|   },
+120|   "Real Estate": {
+121|     regulatoryBodies: [
+122|       "Real Estate Institute", "Estate Agents Authority", "Consumer Affairs",
+123|       "Fair Trading", "Property Council"
+124|     ],
+125|     credentials: [
+126|       "Licensed Agent", "Licensed Real Estate Agent", "REIA", "Registered",
+127|       "Auctioneer"
+128|     ],
+129|     complianceTerms: [
+130|       "license number", "licensed", "member of", "professional standards",
+131|       "code of conduct", "registered"
+132|     ],
+133|     reviewLimitations: {
+134|       "All": false
+135|     },
+136|     scoreWeightAdjustments: {
+137|       expertiseWeight: 0.4,
+138|       authorityWeight: 0.4,
+139|       consistencyWeight: 0.2
+140|     }
+141|   },
+142|   "Default": {
+143|     scoreWeightAdjustments: {
+144|       expertiseWeight: 0.45,
+145|       authorityWeight: 0.35,
+146|       consistencyWeight: 0.2
+147|     }
+148|   }
+149| };
       headers: {
         'Authorization': `Basic ${authString}`,
         'Content-Type': 'application/json'
