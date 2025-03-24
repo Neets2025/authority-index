@@ -83,70 +83,70 @@ const industryRegulations = {
       "Partner", "Legal Practitioner"
     ],
     complianceTerms: [
-      "practicing certificate", "admitted", "legal practitioner](#) ▋
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/json'
-      },
-      data: requestData,
-      timeout: 30000 // Longer timeout for DataForSEO responses
-    });
-    
-    console.log('DataForSEO response status:', response.status);
-    
-    // More detailed error checking and logging
-    if (!response.data || response.data.status_code !== 20000) {
-      console.error('DataForSEO API error:', response.data);
-      throw new Error(`DataForSEO API returned error: ${response.data?.status_message || 'Unknown error'}`);
+      "practicing certificate", "admitted", "legal practitioner",
+      "professional standards", "ethics", "legal profession"
+    ],
+    reviewLimitations: {
+      "All": true
+    },
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.5,
+      authorityWeight: 0.25,
+      consistencyWeight: 0.25
     }
-    
-    // Validate response structure and extract content
-    if (response.data.tasks && 
-        response.data.tasks[0] && 
-        response.data.tasks[0].result && 
-        response.data.tasks[0].result[0] && 
-        response.data.tasks[0].result[0].items && 
-        response.data.tasks[0].result[0].items.length > 0) {
-      
-      const content = response.data.tasks[0].result[0].items[0].page_content;
-      
-      if (!content || content.length < 100) {
-        console.error('DataForSEO content too short or empty:', content);
-        throw new Error('No substantial content retrieved from DataForSEO');
-      }
-      
-      return content;
-    } else {
-      console.error('Invalid DataForSEO response structure:', JSON.stringify(response.data).substring(0, 500) + '...');
-      throw new Error('Invalid response structure from DataForSEO');
+  },
+  "Construction": {
+    regulatoryBodies: [
+      "Building Commission", "Fair Trading", "Master Builders",
+      "Housing Industry Association", "Building Practitioners Board"
+    ],
+    credentials: [
+      "Licensed Builder", "Registered", "Certified", "Master Builder",
+      "Building Practitioner"
+    ],
+    complianceTerms: [
+      "licensed", "insured", "warranty", "building code", "compliance",
+      "Australian Standards", "regulations"
+    ],
+    reviewLimitations: {
+      "All": false
+    },
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.4,
+      authorityWeight: 0.4,
+      consistencyWeight: 0.2
     }
-  } catch (error) {
-    console.error('Error fetching from DataForSEO:', error.message);
-    
-    // Check if it's an axios error with a response
-    if (error.response) {
-      console.error('DataForSEO response error data:', error.response.data);
+  },
+  "Real Estate": {
+    regulatoryBodies: [
+      "Real Estate Institute", "Estate Agents Authority", "Consumer Affairs",
+      "Fair Trading", "Property Council"
+    ],
+    credentials: [
+      "Licensed Agent", "Licensed Real Estate Agent", "REIA", "Registered",
+      "Auctioneer"
+    ],
+    complianceTerms: [
+      "license number", "licensed", "member of", "professional standards",
+      "code of conduct", "registered"
+    ],
+    reviewLimitations: {
+      "All": false
+    },
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.4,
+      authorityWeight: 0.4,
+      consistencyWeight: 0.2
     }
-    
-    throw new Error(`Failed to fetch content from DataForSEO: ${error.message}`);
+  },
+  "Default": {
+    scoreWeightAdjustments: {
+      expertiseWeight: 0.45,
+      authorityWeight: 0.35,
+      consistencyWeight: 0.2
+    }
   }
-}
-
-// Add a function to fetch competitor data from DataForSEO
-async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
-  try {
-    console.log(`Fetching competitors from DataForSEO for ${url}...`);
-    
-    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
-      throw new Error('DataForSEO credentials not configured');
-    }
-    
-    // Format the request for the Competitors API
-    const requestData = [{
-      target: url,
-      limit: limit
-    }];
-    
+};
     const authString = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
     
     const response = await axios({
