@@ -3,139 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LABSOLUTELY.ai</title>
+  <meta name="description" content="LABSOLUTELY.ai helps you analyze your website's authority index and compare against competitors in your industry">
+  <title>LABSOLUTELY.ai - Authority Index</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #0a2540;
+      --secondary-color: #4299e1;
+      --accent-color: #48bb78;
+      --warning-color: #ed8936;
+      --background-color: #f8f9fa;
+      --card-color: #ffffff;
+      --text-color: #333333;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --spacing-xs: 5px;
+      --spacing-sm: 10px;
+      --spacing-md: 15px;
+      --spacing-lg: 25px;
+      --spacing-xl: 40px;
+    }
+    
+    /* Color definitions for rating bands */
+    .rating-low {
+      color: #e53e3e;
+    }
+    .rating-medium {
+      color: #ed8936;
+    }
+    .rating-high {
+      color: #38a169;
+    }
+    
+    /* Base styles */
     body {
-      font-family: 'Inter', Arial, sans-serif;
-      max-width: 1000px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
       line-height: 1.6;
-      color: #333;
-      background-color: #f8f9fa;
+      color: var(--text-color);
+      background-color: var(--background-color);
     }
-    h1, h2, h3 {
-      color: #0a2540;
+    
+    h1, h2, h3, h4 {
+      color: var(--primary-color);
+      margin-top: 0;
     }
+    
     h1 {
       font-size: 28px;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 700;
     }
+    
+    h2 {
+      font-size: 22px;
+      margin-bottom: var(--spacing-md);
+      font-weight: 600;
+    }
+    
+    h3 {
+      font-size: 18px;
+      margin-bottom: var(--spacing-sm);
+      font-weight: 600;
+    }
+    
+    h4 {
+      font-size: 16px;
+      margin-bottom: var(--spacing-sm);
+      font-weight: 600;
+    }
+    
+    p {
+      margin-bottom: var(--spacing-md);
+    }
+    
+    /* Card component */
     .card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 25px;
-      margin-bottom: 25px;
-      background-color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      background-color: var(--card-color);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s;
     }
+    
+    .card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Form elements */
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: var(--spacing-xs);
       font-weight: 600;
       color: #4a5568;
     }
+    
     input, select {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
       font-size: 16px;
+      transition: border-color 0.2s;
     }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+    }
+    
     button, .button {
-      background-color: #0a2540;
+      background-color: var(--primary-color);
       color: white;
       border: none;
       padding: 12px 20px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       font-size: 16px;
       font-weight: 500;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, transform 0.1s;
       text-decoration: none;
       display: inline-block;
     }
+    
     button:hover, .button:hover {
       background-color: #0d3256;
+      transform: translateY(-1px);
     }
+    
+    button:active, .button:active {
+      transform: translateY(1px);
+    }
+    
     button:disabled {
       background-color: #cbd5e0;
       cursor: not-allowed;
+      transform: none;
     }
+    
     .hidden {
       display: none;
     }
+    
+    /* Score cards */
     .scores-container {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 25px;
+      margin-bottom: var(--spacing-lg);
       flex-wrap: wrap;
-      gap: 15px;
+      gap: var(--spacing-md);
     }
+    
     .score-card {
       flex: 1;
-      min-width: 180px;
+      min-width: 200px;
       text-align: center;
       background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      border-top: 4px solid #0a2540;
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border-top: 4px solid var(--primary-color);
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    
+    .score-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+    
     .score-card.expertise {
-      border-top-color: #4299e1;
+      border-top-color: var(--secondary-color);
     }
+    
     .score-card.authority {
-      border-top-color: #48bb78;
+      border-top-color: var(--accent-color);
     }
+    
     .score-card.consistency {
-      border-top-color: #ed8936;
+      border-top-color: var(--warning-color);
     }
+    
     .score-card.overall {
-      border-top-color: #0a2540;
+      border-top-color: var(--primary-color);
     }
+    
     .score-label {
       font-size: 14px;
       font-weight: 600;
       color: #4a5568;
-      margin-bottom: 10px;
+      margin-bottom: var(--spacing-sm);
     }
+    
     .score-value {
       font-size: 36px;
       font-weight: 700;
-      color: #0a2540;
-      margin: 10px 0;
+      color: var(--primary-color);
+      margin: var(--spacing-sm) 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
     }
+    
+    .score-value .out-of {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-left: 5px;
+    }
+    
     .score-description {
       font-size: 13px;
-      color: #718096;
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-sm);
+      line-height: 1.4;
     }
+    
+    .score-band {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .score-band.low {
+      background-color: #FED7D7;
+      color: #E53E3E;
+    }
+    
+    .score-band.medium {
+      background-color: #FEEBC8;
+      color: #DD6B20;
+    }
+    
+    .score-band.high {
+      background-color: #C6F6D5;
+      color: #38A169;
+    }
+    
+    /* Eclipse alert */
     .eclipse-alert {
       background-color: #fff3cd;
       border: 1px solid #ffecb5;
       color: #856404;
-      padding: 15px;
-      border-radius: 4px;
-      margin: 20px 0;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      margin: var(--spacing-lg) 0;
       display: flex;
       align-items: flex-start;
     }
+    
     .eclipse-alert svg {
-      margin-right: 10px;
+      margin-right: var(--spacing-sm);
       flex-shrink: 0;
     }
+    
+    /* Loading spinner */
     .loading-spinner {
       display: inline-block;
       width: 50px;
       height: 50px;
       border: 3px solid rgba(0,0,0,.1);
       border-radius: 50%;
-      border-top-color: #0a2540;
+      border-top-color: var(--primary-color);
       animation: spin 1s ease-in-out infinite;
+      margin: var(--spacing-md) auto;
     }
+    
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -144,9 +291,11 @@
     .quadrant-container {
       position: relative;
       height: 400px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--border-color);
       margin: 30px 0;
       background-color: white;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
     }
     
     .quadrant-grid {
@@ -161,14 +310,40 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 15px;
+      padding: var(--spacing-md);
       position: relative;
+      transition: background-color 0.2s;
+    }
+    
+    .quadrant:hover {
+      background-color: rgba(0,0,0,0.03);
+    }
+    
+    .quadrant.top-left {
+      border-right: 1px dashed var(--border-color);
+      border-bottom: 1px dashed var(--border-color);
+      background-color: rgba(66, 153, 225, 0.05);
+    }
+    
+    .quadrant.top-right {
+      border-bottom: 1px dashed var(--border-color);
+      background-color: rgba(72, 187, 120, 0.05);
+    }
+    
+    .quadrant.bottom-left {
+      border-right: 1px dashed var(--border-color);
+      background-color: rgba(237, 137, 54, 0.05);
+    }
+    
+    .quadrant.bottom-right {
+      background-color: rgba(255, 158, 0, 0.05);
     }
     
     .quadrant-label {
       font-weight: 600;
       font-size: 14px;
       color: #4a5568;
+      z-index: 1;
     }
     
     .quadrant-entity {
@@ -183,16 +358,49 @@
       color: #4a5568;
       font-weight: 600;
       z-index: 10;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+      font-size: 12px;
+      text-align: center;
+      word-break: break-word;
+      cursor: pointer;
+    }
+    
+    .quadrant-entity:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: var(--shadow-md);
+      z-index: 20;
     }
     
     .quadrant-entity.you {
       background-color: #ffefc1;
       border: 2px solid #ffd254;
+      font-weight: 700;
+      font-size: 14px;
+      width: 90px;
+      height: 90px;
     }
     
     .quadrant-entity.competitor {
       background-color: #b2ddff;
       border: 2px solid #4299e1;
+    }
+    
+    .quadrant-entity.boss {
+      background-color: #c9f7d5;
+      border: 2px solid #48bb78;
+      font-weight: 700;
+      width: 95px;
+      height: 95px;
+    }
+    
+    .quadrant-entity.simulated {
+      opacity: 0.7;
+      transform: translate(-50%, -50%) scale(0.85);
+    }
+    
+    .quadrant-entity.simulated:hover {
+      transform: translate(-50%, -50%) scale(0.9);
     }
     
     .axis-label {
@@ -210,31 +418,34 @@
       width: 100%;
       text-align: center;
       padding: 10px 0;
+      background-color: rgba(255,255,255,0.8);
+      border-top: 1px solid var(--border-color);
     }
     
     .y-axis {
       position: absolute;
       top: 50%;
-      left: -50px;
+      left: -40px;
       transform: translateY(-50%) rotate(-90deg);
       transform-origin: center;
+      white-space: nowrap;
     }
     
-    /* Venn diagram styles */
-    .visibility-container {
-      margin-top: 40px;
+    /* Eclipse visualization styles */
+    .eclipse-container {
+      margin-top: var(--spacing-xl);
       text-align: center;
     }
     
-    .venn-diagram {
+    .eclipse-diagram {
       position: relative;
       height: 300px;
       margin: 0 auto;
       width: 500px;
-      margin-bottom: 40px;
+      margin-bottom: var(--spacing-xl);
     }
     
-    .venn-circle {
+    .eclipse-circle {
       position: absolute;
       border-radius: 50%;
       display: flex;
@@ -246,82 +457,255 @@
       width: 220px;
       height: 220px;
       top: 40px;
+      transition: all 0.5s ease;
+      cursor: pointer;
     }
     
-    .capability-circle {
-      background-color: #fffbdd;
-      border: 2px solid #ffeaa7;
+    .eclipse-circle:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    
+    .expertise-circle {
+      background-color: rgba(66, 153, 225, 0.15);
+      border: 2px solid rgba(66, 153, 225, 0.5);
+      color: #2b6cb0;
       left: 90px;
       z-index: 1;
     }
     
     .recognition-circle {
-      background-color: #000000;
-      color: white;
+      background-color: rgba(72, 187, 120, 0.15);
+      border: 2px solid rgba(72, 187, 120, 0.5);
+      color: #2f855a;
       right: 90px;
       z-index: 2;
     }
     
     /* Diagnosis styles */
     .diagnosis-container {
-      margin-top: 30px;
-      padding: 20px;
+      margin-top: var(--spacing-lg);
+      padding: var(--spacing-lg);
       background-color: #f8f9fa;
-      border-radius: 8px;
-      border-left: 4px solid #0a2540;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--primary-color);
     }
     
     .diagnosis-title {
       font-weight: 700;
       font-size: 18px;
-      margin-bottom: 10px;
-      color: #0a2540;
+      margin-bottom: var(--spacing-sm);
+      color: var(--primary-color);
     }
     
     .diagnosis-content {
       color: #4a5568;
+      line-height: 1.6;
     }
     
     /* Healthcare specialty selector */
     #specialtyContainer {
-      margin-top: 15px;
+      margin-top: var(--spacing-md);
     }
     
     /* Competitor boss insight card */
-    .boss-insight {
+    .insight-card {
       background-color: #f0f9ff;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 20px 0;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      margin: var(--spacing-lg) 0;
       border-left: 4px solid #3b82f6;
+      transition: transform 0.2s;
+    }
+    
+    .insight-card:hover {
+      transform: translateY(-2px);
     }
 
-    .boss-insight h3 {
+    .insight-card.boss {
+      background-color: #f0f9ff;
+      border-left-color: #3b82f6;
+    }
+    
+    .insight-card.eclipse {
+      background-color: #fff8e1;
+      border-left-color: #f6a609;
+    }
+    
+    .insight-card.industry {
+      background-color: #f0fff4;
+      border-left-color: #48bb78;
+    }
+    
+    .insight-card.regulation {
+      background-color: #f9f5ff;
+      border-left-color: #805ad5;
+    }
+
+    .insight-card h3 {
       margin-top: 0;
-      color: #0a2540;
+      color: var(--primary-color);
       font-size: 18px;
     }
 
-    .boss-insight p {
+    .insight-card p {
       color: #4a5568;
       margin-bottom: 0;
+    }
+    
+    /* Recommendations list */
+    .recommendations {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .recommendations li {
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      border-left: 4px solid var(--accent-color);
+      background-color: rgba(72, 187, 120, 0.05);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     }
     
     /* Data source note */
     .data-source-note {
       font-size: 12px;
-      color: #718096;
-      margin-top: 10px;
+      color: var(--text-muted);
+      margin-top: var(--spacing-sm);
       font-style: italic;
     }
     
+    /* Tooltips */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+    
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 240px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: var(--radius-sm);
+      padding: var(--spacing-sm);
+      position: absolute;
+      z-index: 100;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      font-weight: normal;
+      pointer-events: none;
+    }
+    
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #333 transparent transparent transparent;
+    }
+    
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    /* Footer */
     .footer {
       margin-top: 50px;
       padding-top: 20px;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--border-color);
       text-align: center;
       font-size: 14px;
-      color: #718096;
+      color: var(--text-muted);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .scores-container {
+        flex-direction: column;
+      }
+      
+      .score-card {
+        margin-bottom: var(--spacing-md);
+      }
+      
+      .quadrant-container {
+        height: 300px;
+      }
+      
+      .quadrant-entity {
+        width: 70px;
+        height: 70px;
+        font-size: 10px;
+      }
+      
+      .quadrant-entity.you,
+      .quadrant-entity.boss {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .eclipse-diagram {
+        width: 100%;
+        height: 250px;
+      }
+      
+      .eclipse-circle {
+        width: 180px;
+        height: 180px;
+        font-size: 16px;
+      }
+      
+      .y-axis {
+        left: -30px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .card {
+        padding: var(--spacing-md);
+      }
+      
+      .score-value {
+        font-size: 30px;
+      }
+      
+      .quadrant-label {
+        font-size: 12px;
+      }
+      
+      .quadrant-entity {
+        width: 60px;
+        height: 60px;
+        font-size: 9px;
+      }
+      
+      .quadrant-entity.you,
+      .quadrant-entity.boss {
+        width: 70px;
+        height: 70px;
+        font-size: 12px;
+      }
+      
+      .eclipse-circle {
+        width: 150px;
+        height: 150px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -336,7 +720,8 @@
     <form id="urlForm">
       <div>
         <label for="url">Website URL:</label>
-        <input type="url" id="url" required placeholder="https://example.com">
+        <input type="url" id="url" required placeholder="https://example.com" aria-describedby="url-help">
+        <small id="url-help" class="data-source-note">Enter the full URL including https://</small>
       </div>
       <div>
         <label for="industry">Industry/Sector:</label>
@@ -346,8 +731,10 @@
           <option value="Construction">Builders/Construction</option>
           <option value="Environmental">Environmental</option>
           <option value="Technology">Technology</option>
-          <option value="Education">Education</option>
+          <option value="Legal">Legal Services</option>
           <option value="Finance">Finance</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="Education">Education</option>
           <option value="Non-profit">Non-profit</option>
           <option value="Professional Services">Professional Services</option>
           <option value="Other">Other</option>
@@ -363,6 +750,32 @@
           <option value="Plastic Surgery">Plastic Surgery</option>
           <option value="Cosmetic Surgery">Cosmetic Surgery</option>
           <option value="Dentistry">Dentistry</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <!-- Finance specialty selector - hidden by default -->
+      <div id="financeSpecialtyContainer" class="form-group hidden">
+        <label for="financeSpecialty">Finance Specialty:</label>
+        <select id="financeSpecialty">
+          <option value="">Select a specialty</option>
+          <option value="Financial Planning">Financial Planning</option>
+          <option value="Mortgage Broking">Mortgage Broking</option>
+          <option value="Accounting">Accounting</option>
+          <option value="Investment">Investment</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <!-- Legal specialty selector - hidden by default -->
+      <div id="legalSpecialtyContainer" class="form-group hidden">
+        <label for="legalSpecialty">Legal Specialty:</label>
+        <select id="legalSpecialty">
+          <option value="">Select a specialty</option>
+          <option value="Family Law">Family Law</option>
+          <option value="Criminal Law">Criminal Law</option>
+          <option value="Commercial Law">Commercial Law</option>
+          <option value="Property Law">Property Law</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -383,24 +796,60 @@
       
       <div class="scores-container">
         <div class="score-card expertise">
-          <div class="score-label">Expertise Signals</div>
-          <div id="expertise-score" class="score-value">0</div>
+          <div class="score-label">
+            Expertise Signals
+            <span class="tooltip">ⓘ
+              <span class="tooltiptext">Measures how well your website content demonstrates your professional expertise and problem-solving capabilities</span>
+            </span>
+          </div>
+          <div id="expertise-score" class="score-value">0<span class="out-of">/100</span></div>
           <div class="score-description">How well your content demonstrates capability</div>
+          <div id="expertise-band" class="score-band medium">Medium</div>
         </div>
         <div class="score-card authority">
-          <div class="score-label">Digital Authority</div>
-          <div id="authority-score" class="score-value">0</div>
+          <div class="score-label">
+            Digital Authority
+            <span class="tooltip">ⓘ
+              <span class="tooltiptext">Measures your online visibility, credibility signals, and external validation factors</span>
+            </span>
+          </div>
+          <div id="authority-score" class="score-value">0<span class="out-of">/100</span></div>
           <div class="score-description">Your online visibility and credibility</div>
+          <div id="authority-band" class="score-band medium">Medium</div>
         </div>
         <div class="score-card consistency">
-          <div class="score-label">Consistency Markers</div>
-          <div id="consistency-score" class="score-value">0</div>
+          <div class="score-label">
+            Consistency Markers
+            <span class="tooltip">ⓘ
+              <span class="tooltiptext">Measures your brand voice consistency, messaging coherence, and content structure</span>
+            </span>
+          </div>
+          <div id="consistency-score" class="score-value">0<span class="out-of">/100</span></div>
           <div class="score-description">Messaging coherence and brand voice</div>
+          <div id="consistency-band" class="score-band medium">Medium</div>
         </div>
         <div class="score-card overall">
-          <div class="score-label">Overall Authority Index</div>
-          <div id="overall-score" class="score-value">0</div>
+          <div class="score-label">
+            Overall Authority Index
+            <span class="tooltip">ⓘ
+              <span class="tooltiptext">The weighted average of all factors, indicating your overall digital market position</span>
+            </span>
+          </div>
+          <div id="overall-score" class="score-value">0<span class="out-of">/100</span></div>
           <div class="score-description">Your overall market position</div>
+          <div id="overall-band" class="score-band medium">Medium</div>
+        </div>
+      </div>
+      
+      <!-- Expertise Eclipse alert - hidden by default -->
+      <div id="eclipse-alert" class="eclipse-alert hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <strong>Expertise Eclipse Detected:</strong> Your expertise significantly outshines your digital visibility. This means potential clients may not be discovering your excellent capabilities online.
         </div>
       </div>
       
@@ -416,10 +865,9 @@
       <div id="competitor-section">
         <h3>HERE'S HOW YOU COMPARE</h3>
         
-        <!-- Boss insight -->
-        <div id="boss-insight" class="boss-insight">
-          <h3 id="boss-title">Who's The Boss?</h3>
-          <p id="boss-message">Analysis will show which business has the strongest online presence.</p>
+        <!-- Insights cards container -->
+        <div id="insights-container">
+          <!-- Cards will be inserted here by JavaScript -->
         </div>
         
         <!-- Quadrant visualization -->
@@ -432,7 +880,7 @@
               <div class="quadrant-label">DIGITAL AUTHORITY</div>
             </div>
             <div class="quadrant bottom-left">
-              <div class="quadrant-label">LIMITED VISIBILITY</div>
+              <div class="quadrant-label">LIMITED VISIBILITY</div>a
             </div>
             <div class="quadrant bottom-right">
               <div class="quadrant-label">BORROWED AUTHORITY</div>
@@ -448,39 +896,61 @@
         </div>
       </div>
       
-      <!-- Venn diagram -->
-      <div class="visibility-container">
+      <!-- Eclipse visualization -->
+      <div class="eclipse-container">
         <h3>YOUR VISIBILITY</h3>
-        <div class="venn-diagram">
-          <div id="capability-circle" class="venn-circle capability-circle">
-            CAPABILITY
+        <div class="eclipse-diagram">
+          <div id="expertise-circle" class="eclipse-circle expertise-circle">
+            EXPERTISE
           </div>
-          <div id="recognition-circle" class="venn-circle recognition-circle">
-            MARKET RECOGNITION
+          <div id="recognition-circle" class="eclipse-circle recognition-circle">
+            VISIBILITY
           </div>
         </div>
       </div>
     </div>
     
     <div class="card">
-      <h2>Recommendations</h2>
-      <ul id="recommendations" class="recommendations"></ul>
+      <h2>
+        Recommendations
+        <span class="tooltip">ⓘ
+          <span class="tooltiptext">Actionable steps to improve your website authority and digital presence</span>
+        </span>
+      </h2>
+      <ul id="recommendations" class="recommendations">
+        <!-- Recommendations will be inserted here by JavaScript -->
+      </ul>
     </div>
   </div>
 
   <div class="footer">
-    <p>Powered by Machine Learning. Help us improve: <a href="#">Provide Feedback</a></p>
+    <p>Powered by LABSOLUTELY.ai | Version 1.1.0 | <a href="#">Provide Feedback</a></p>
   </div>
 
   <script>
-    // Show specialty selector when Healthcare is selected
+    // Show the appropriate specialty selector when an industry is selected
     document.getElementById('industry').addEventListener('change', function() {
       const specialtyContainer = document.getElementById('specialtyContainer');
+      const financeSpecialtyContainer = document.getElementById('financeSpecialtyContainer');
+      const legalSpecialtyContainer = document.getElementById('legalSpecialtyContainer');
+      
+      // Hide all specialty selectors first
+      specialtyContainer.classList.add('hidden');
+      if (financeSpecialtyContainer) financeSpecialtyContainer.classList.add('hidden');
+      if (legalSpecialtyContainer) legalSpecialtyContainer.classList.add('hidden');
+      
+      // Reset all specialty values
+      document.getElementById('specialty').value = '';
+      if (document.getElementById('financeSpecialty')) document.getElementById('financeSpecialty').value = '';
+      if (document.getElementById('legalSpecialty')) document.getElementById('legalSpecialty').value = '';
+      
+      // Show the appropriate specialty selector
       if (this.value === 'Healthcare') {
         specialtyContainer.classList.remove('hidden');
-      } else {
-        specialtyContainer.classList.add('hidden');
-        document.getElementById('specialty').value = '';
+      } else if (this.value === 'Finance') {
+        financeSpecialtyContainer.classList.remove('hidden');
+      } else if (this.value === 'Legal') {
+        legalSpecialtyContainer.classList.remove('hidden');
       }
     });
     
@@ -489,8 +959,16 @@
       
       const url = document.getElementById('url').value;
       const industry = document.getElementById('industry').value;
-      const specialty = industry === 'Healthcare' ? 
-                       document.getElementById('specialty').value : '';
+      
+      // Determine which specialty to use based on the selected industry
+      let specialty = '';
+      if (industry === 'Healthcare') {
+        specialty = document.getElementById('specialty').value;
+      } else if (industry === 'Finance' && document.getElementById('financeSpecialty')) {
+        specialty = document.getElementById('financeSpecialty').value;
+      } else if (industry === 'Legal' && document.getElementById('legalSpecialty')) {
+        specialty = document.getElementById('legalSpecialty').value;
+      }
       
       // Show loading, hide form, disable button
       document.getElementById('loading').classList.remove('hidden');
@@ -524,17 +1002,44 @@
     });
     
     function displayResults(analysis) {
-      // Update scores
+      // Update scores and rating bands
       document.getElementById('expertise-score').textContent = analysis.expertiseSignals;
       document.getElementById('authority-score').textContent = analysis.digitalAuthority;
       document.getElementById('consistency-score').textContent = analysis.consistencyMarkers;
       document.getElementById('overall-score').textContent = analysis.authorityIndex;
       
+      // Update rating bands
+      if (analysis.ratingBands) {
+        updateRatingBand('expertise-band', analysis.ratingBands.expertise);
+        updateRatingBand('authority-band', analysis.ratingBands.authority);
+        updateRatingBand('consistency-band', analysis.ratingBands.consistency);
+        updateRatingBand('overall-band', analysis.ratingBands.overall);
+      } else {
+        // Fallback if rating bands aren't provided
+        updateRatingBand('expertise-band', getRatingBand(analysis.expertiseSignals));
+        updateRatingBand('authority-band', getRatingBand(analysis.digitalAuthority));
+        updateRatingBand('consistency-band', getRatingBand(analysis.consistencyMarkers));
+        updateRatingBand('overall-band', getRatingBand(analysis.authorityIndex));
+      }
+      
       // Update diagnosis
       document.getElementById('diagnosis-content').textContent = analysis.diagnosis;
       
-      // Update Venn diagram
-      updateVennDiagram(analysis.expertiseSignals, analysis.digitalAuthority);
+      // Check for expertise eclipse
+      const eclipseAlert = document.getElementById('eclipse-alert');
+      if (analysis.hasExpertiseEclipse) {
+        eclipseAlert.classList.remove('hidden');
+      } else {
+        eclipseAlert.classList.add('hidden');
+      }
+      
+      // Update Eclipse diagram
+      updateEclipseDiagram(analysis.expertiseSignals, analysis.digitalAuthority);
+      
+      // Display competitive insights if available
+      if (analysis.competitorInsights && analysis.competitorInsights.length > 0) {
+        displayCompetitiveInsights(analysis.competitorInsights);
+      }
       
       // Display recommendations
       const recommendationsElement = document.getElementById('recommendations');
@@ -557,15 +1062,6 @@
           },
           analysis.competitors
         );
-        
-        // Display boss insight if available
-        if (analysis.competitorInsights && analysis.competitorInsights.length > 0) {
-          const bossInsight = analysis.competitorInsights.find(insight => insight.type === 'competitor');
-          if (bossInsight) {
-            document.getElementById('boss-title').textContent = bossInsight.title;
-            document.getElementById('boss-message').textContent = bossInsight.message;
-          }
-        }
       }
       
       // Show results
@@ -573,6 +1069,54 @@
       
       // Hide the form
       document.getElementById('analysis-form').classList.add('hidden');
+      
+      // Scroll to the top of results
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function updateRatingBand(elementId, rating) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      // Remove existing classes
+      element.classList.remove('low', 'medium', 'high');
+      
+      // Add new class and set text
+      if (rating === 'Low') {
+        element.classList.add('low');
+      } else if (rating === 'Medium') {
+        element.classList.add('medium');
+      } else if (rating === 'High') {
+        element.classList.add('high');
+      }
+      
+      element.textContent = rating;
+    }
+    
+    function getRatingBand(score) {
+      if (score <= 40) return "Low";
+      if (score <= 70) return "Medium";
+      return "High";
+    }
+    
+    function displayCompetitiveInsights(insights) {
+      const insightsContainer = document.getElementById('insights-container');
+      insightsContainer.innerHTML = '';
+      
+      insights.forEach(insight => {
+        const insightCard = document.createElement('div');
+        insightCard.className = `insight-card ${insight.type}`;
+        
+        const title = document.createElement('h3');
+        title.textContent = insight.title;
+        
+        const message = document.createElement('p');
+        message.textContent = insight.message;
+        
+        insightCard.appendChild(title);
+        insightCard.appendChild(message);
+        insightsContainer.appendChild(insightCard);
+      });
     }
     
     function positionEntitiesInQuadrant(yourSite, competitors) {
@@ -593,12 +1137,22 @@
       
       yourMarker.style.left = `${yourXPos}%`;
       yourMarker.style.top = `${yourYPos}%`;
+      
+      // Add tooltip with scores
+      yourMarker.title = `Your scores: ${yourSite.expertiseScore} expertise, ${yourSite.authorityScore} authority`;
+      
       quadrant.appendChild(yourMarker);
       
       // Add competitors to the quadrant
       competitors.forEach((competitor, index) => {
         const competitorMarker = document.createElement('div');
-        competitorMarker.className = 'quadrant-entity competitor';
+        
+        // Determine marker class
+        let markerClass = 'quadrant-entity competitor';
+        if (competitor.isBoss) markerClass += ' boss';
+        if (competitor.isSimulated) markerClass += ' simulated';
+        
+        competitorMarker.className = markerClass;
         
         // Show abbreviated name if too long
         const displayName = competitor.name.length > 12 ? 
@@ -613,47 +1167,39 @@
           // The boss should be in a position of strength, ideally Digital Authority
           compXPos = Math.min(95, Math.max(65, (competitor.authorityScore || 75) / 100 * 100));
           compYPos = Math.min(50, Math.max(5, 100 - ((competitor.expertiseScore || 70) / 100 * 100)));
-          
-          // Make it slightly larger
-          competitorMarker.style.width = '85px';
-          competitorMarker.style.height = '85px';
-          competitorMarker.style.zIndex = '20';
         } else {
           // Regular competitors
           compXPos = Math.min(95, Math.max(5, (competitor.authorityScore || 50) / 100 * 100));
           compYPos = Math.min(95, Math.max(5, 100 - ((competitor.expertiseScore || 50) / 100 * 100)));
-          
-          // Make simulated competitors slightly transparent
-          if (competitor.isSimulated) {
-            competitorMarker.style.opacity = '0.7';
-            competitorMarker.style.transform = 'translate(-50%, -50%) scale(0.85)';
-          }
         }
         
         competitorMarker.style.left = `${compXPos}%`;
         competitorMarker.style.top = `${compYPos}%`;
         
-        // Add tooltip with full name
-        competitorMarker.title = competitor.name;
+        // Add tooltip with full name and scores
+        competitorMarker.title = `${competitor.name}: ${competitor.expertiseScore || '?'} expertise, ${competitor.authorityScore || '?'} authority`;
+        if (competitor.isSimulated) {
+          competitorMarker.title += ' (simulated data)';
+        }
         
         quadrant.appendChild(competitorMarker);
       });
     }
     
-    function updateVennDiagram(expertiseScore, authorityScore) {
-      const capabilityCircle = document.getElementById('capability-circle');
+    function updateEclipseDiagram(expertiseScore, authorityScore) {
+      const expertiseCircle = document.getElementById('expertise-circle');
       const recognitionCircle = document.getElementById('recognition-circle');
       
       // Base size for the circles
       const baseSize = 220;
       
-      // Calculate size adjustment based on scores (±20px)
-      const capabilitySizeAdjust = ((expertiseScore / 100) * 40) - 20;
-      const recognitionSizeAdjust = ((authorityScore / 100) * 40) - 20;
+      // Calculate size adjustment based on scores (±40px)
+      const expertiseSizeAdjust = ((expertiseScore / 100) * 40) - 20;
+      const authoritySizeAdjust = ((authorityScore / 100) * 40) - 20;
       
       // Calculate final sizes (ensure minimum size)
-      const capabilitySize = Math.max(180, baseSize + capabilitySizeAdjust);
-      const recognitionSize = Math.max(180, baseSize + recognitionSizeAdjust);
+      const expertiseSize = Math.max(180, baseSize + expertiseSizeAdjust);
+      const authoritySize = Math.max(180, baseSize + authoritySizeAdjust);
       
       // Calculate overlap based on score similarity
       // More similar scores = more overlap
@@ -667,24 +1213,32 @@
       
       // Adjust positions based on circle sizes and desired overlap
       const centerPoint = diagramWidth / 2;
-      const capabilityLeft = centerPoint - (capabilitySize / 2) - ((capabilitySize - totalOverlap) / 2);
-      const recognitionRight = centerPoint - (recognitionSize / 2) + ((recognitionSize - totalOverlap) / 2);
+      const expertiseLeft = centerPoint - (expertiseSize / 2) - ((expertiseSize - totalOverlap) / 2);
+      const recognitionRight = centerPoint - (authoritySize / 2) + ((authoritySize - totalOverlap) / 2);
       
       // Set sizes and positions
-      capabilityCircle.style.width = `${capabilitySize}px`;
-      capabilityCircle.style.height = `${capabilitySize}px`;
-      capabilityCircle.style.left = `${capabilityLeft}px`;
+      expertiseCircle.style.width = `${expertiseSize}px`;
+      expertiseCircle.style.height = `${expertiseSize}px`;
+      expertiseCircle.style.left = `${expertiseLeft}px`;
       
-      recognitionCircle.style.width = `${recognitionSize}px`;
-      recognitionCircle.style.height = `${recognitionSize}px`;
+      recognitionCircle.style.width = `${authoritySize}px`;
+      recognitionCircle.style.height = `${authoritySize}px`;
       recognitionCircle.style.right = `${recognitionRight}px`;
+      
+      // Adjust opacity based on score - higher score = more solid
+      expertiseCircle.style.opacity = 0.5 + (expertiseScore / 200);
+      recognitionCircle.style.opacity = 0.5 + (authorityScore / 200);
+      
+      // Add score indicators
+      expertiseCircle.innerHTML = `EXPERTISE<br><span style="font-size: 14px;">${expertiseScore}/100</span>`;
+      recognitionCircle.innerHTML = `VISIBILITY<br><span style="font-size: 14px;">${authorityScore}/100</span>`;
       
       // Adjust z-index based on which score is higher
       if (expertiseScore > authorityScore) {
-        capabilityCircle.style.zIndex = 2;
+        expertiseCircle.style.zIndex = 2;
         recognitionCircle.style.zIndex = 1;
       } else {
-        capabilityCircle.style.zIndex = 1;
+        expertiseCircle.style.zIndex = 1;
         recognitionCircle.style.zIndex = 2;
       }
     }
