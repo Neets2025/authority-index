@@ -1333,33 +1333,63 @@ async function getBusinessDetails(placeId) {
 }
 
 // Function to generate simulated competitors based on industry and user data
+/**
+ * Generates simulated competitors when real data is unavailable
+ * @param {string} industry - The industry category
+ * @param {string} specialty - Optional specialty within the industry
+ * @param {Object} userData - User's website data
+ * @param {number} count - Number of competitors to generate
+ * @returns {Array} - List of simulated competitors
+ */
 function generateSimulatedCompetitors(industry, specialty, userData, count) {
   const simulatedCompetitors = [];
   
   // Industry-specific business name prefixes
   const industryPrefixes = {
-    "Healthcare": ["Advanced", "City", "Premier", "Elite", "Modern", "Australian", "Sydney", "Melbourne", "Brisbane", "Perth"],
-    "Construction": ["Quality", "Expert", "Master", "Professional", "Advanced", "Premier", "Australian", "Western", "Eastern", "Southern"],
-    "Environmental": ["Green", "Eco", "Sustainable", "Natural", "Earth", "Clean", "Australian", "Climate", "Environmental", "Sydney"],
-    "Technology": ["Tech", "Digital", "Innovative", "Smart", "Future", "Advanced", "Next-Gen", "Australian", "Sydney", "Melbourne"],
-    "Finance": ["Secure", "Trusted", "Premier", "Capital", "Financial", "Wealth", "Australian", "Sydney", "Melbourne", "Brisbane"]
+    "Healthcare": ["Advanced", "City", "Premier", "Elite", "Modern", "Australian", "Sydney", "Melbourne", "Brisbane", "Perth", "National", "Complete", "Total"],
+    "Construction": ["Quality", "Expert", "Master", "Professional", "Advanced", "Premier", "Australian", "Western", "Eastern", "Southern", "Precision", "Custom", "Elite"],
+    "Environmental": ["Green", "Eco", "Sustainable", "Natural", "Earth", "Clean", "Australian", "Climate", "Environmental", "Sydney", "Organic", "Renewable", "Pure"],
+    "Technology": ["Tech", "Digital", "Innovative", "Smart", "Future", "Advanced", "Next-Gen", "Australian", "Sydney", "Melbourne", "Cloud", "Cyber", "Data"],
+    "Finance": ["Secure", "Trusted", "Premier", "Capital", "Financial", "Wealth", "Australian", "Sydney", "Melbourne", "Brisbane", "Strategic", "Global", "Asset"],
+    "Legal": ["Expert", "Premier", "Professional", "National", "Australian", "City", "Central", "Regional", "Metropolitan", "Capital", "Advocate", "Justice", "Rights"],
+    "Real Estate": ["Premier", "Elite", "Australian", "Capital", "City", "Metropolitan", "Regional", "National", "First", "Prime", "Select", "Prestige", "Choice"]
   };
   
   // Industry-specific business name suffixes
   const industrySuffixes = {
-    "Healthcare": ["Medical", "Healthcare", "Clinic", "Specialists", "Practice", "Doctors", "Health", "Wellness", "Care", "Group"],
-    "Construction": ["Builders", "Construction", "Homes", "Building", "Projects", "Contractors", "Renovations", "Development", "Structures", "Solutions"],
-    "Environmental": ["Solutions", "Consultants", "Services", "Group", "Associates", "Advisors", "Management", "Team", "Professionals", "Experts"],
-    "Technology": ["Technologies", "Solutions", "Systems", "IT", "Computing", "Digital", "Tech", "Software", "Group", "Services"],
-    "Finance": ["Advisors", "Partners", "Planners", "Group", "Associates", "Consulting", "Management", "Services", "Solutions", "Specialists"]
+    "Healthcare": ["Medical", "Healthcare", "Clinic", "Specialists", "Practice", "Doctors", "Health", "Wellness", "Care", "Group", "Medical Centre", "Hospital"],
+    "Construction": ["Builders", "Construction", "Homes", "Building", "Projects", "Contractors", "Renovations", "Development", "Structures", "Solutions", "Properties"],
+    "Environmental": ["Solutions", "Consultants", "Services", "Group", "Associates", "Advisors", "Management", "Team", "Professionals", "Experts", "Systems"],
+    "Technology": ["Technologies", "Solutions", "Systems", "IT", "Computing", "Digital", "Tech", "Software", "Group", "Services", "Networks", "Cloud", "Innovations"],
+    "Finance": ["Advisors", "Partners", "Planners", "Group", "Associates", "Consulting", "Management", "Services", "Solutions", "Specialists", "Investments"],
+    "Legal": ["Law Firm", "Legal", "Lawyers", "Attorneys", "Law Group", "Legal Partners", "Associates", "Solicitors", "Advocates", "Legal Services", "Legal Solutions"],
+    "Real Estate": ["Properties", "Real Estate", "Realty", "Homes", "Property Group", "Estate Agents", "Realtors", "Property Partners", "Land", "Residential"]
   };
+  
+  // Default prefixes and suffixes if industry not found
+  const defaultPrefixes = ["Premier", "Advanced", "Elite", "Expert", "Professional", "Complete", "Total", "Australian"];
+  const defaultSuffixes = ["Services", "Group", "Solutions", "Professionals", "Experts", "Associates", "Partners", "Australia"];
   
   // Specialty-specific terms
   const specialtyTerms = {
-    "Plastic Surgery": ["Plastic Surgery", "Cosmetic Surgery", "Surgical", "Aesthetics", "Reconstruction"],
-    "Cosmetic Surgery": ["Cosmetic", "Aesthetics", "Beauty", "Enhancement", "Refinement"],
-    "General Practice": ["Family Practice", "Medical Centre", "GP", "Doctors", "Primary Care"],
-    "Dentistry": ["Dental", "Dentistry", "Oral Health", "Smile", "Teeth"]
+    "Healthcare": {
+      "Plastic Surgery": ["Plastic Surgery", "Cosmetic", "Surgical", "Aesthetics", "Reconstruction", "Plastic Surgeons"],
+      "Cosmetic Surgery": ["Cosmetic", "Aesthetics", "Beauty", "Enhancement", "Refinement", "Cosmetic Surgeons"],
+      "General Practice": ["Family Practice", "Medical Centre", "GP", "Doctors", "Primary Care", "Family Medicine"],
+      "Dentistry": ["Dental", "Dentistry", "Oral Health", "Smile", "Teeth", "Dental Care"]
+    },
+    "Finance": {
+      "Financial Planning": ["Financial Planning", "Wealth Advisors", "Financial Advisors", "Investment", "Retirement"],
+      "Mortgage Broking": ["Mortgage", "Lending", "Home Loans", "Finance Brokers", "Mortgage Solutions"],
+      "Accounting": ["Accounting", "Tax", "Accountants", "CPAs", "Business Advisors", "Tax Specialists"],
+      "Investment": ["Investment", "Wealth", "Portfolio", "Asset Management", "Investors"]
+    },
+    "Legal": {
+      "Family Law": ["Family Law", "Divorce", "Custody", "Family Lawyers", "Relationship Law"],
+      "Criminal Law": ["Criminal Law", "Criminal Defense", "Legal Defense", "Trial Lawyers"],
+      "Commercial Law": ["Commercial", "Business Law", "Corporate", "Commercial Lawyers"],
+      "Property Law": ["Property Law", "Conveyancing", "Real Estate Law", "Property Lawyers"]
+    }
   };
   
   // Helper function to fetch traffic data
@@ -1369,10 +1399,12 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
       "Construction": { min: 300, max: 1500 },
       "Environmental": { min: 400, max: 1200 },
       "Technology": { min: 800, max: 3000 },
-      "Finance": { min: 600, max: 2500 }
+      "Finance": { min: 600, max: 2500 },
+      "Legal": { min: 400, max: 2000 },
+      "Real Estate": { min: 700, max: 2800 }
     };
     
-    const indBase = baseTraffic[industry] || baseTraffic["Healthcare"];
+    const indBase = baseTraffic[industry] || { min: 500, max: 2000 };
     const multiplier = isTopCompetitor ? 1.5 : 1;
     
     return Math.floor((Math.random() * (indBase.max - indBase.min) + indBase.min) * multiplier);
@@ -1381,19 +1413,30 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
   // Generate the competitors
   for (let i = 0; i < count; i++) {
     // Get random prefixes and suffixes for the industry
-    const prefixes = industryPrefixes[industry] || industryPrefixes["Healthcare"];
-    let suffixes = industrySuffixes[industry] || industrySuffixes["Healthcare"];
+    const prefixes = industryPrefixes[industry] || defaultPrefixes;
+    let suffixes = industrySuffixes[industry] || defaultSuffixes;
     
-    // If it's healthcare and we have a specialty, mix in some specialty terms
-    if (industry === "Healthcare" && specialty && specialtyTerms[specialty]) {
-      suffixes = [...suffixes, ...specialtyTerms[specialty]];
+    // If it's an industry with specialties and we have a specialty, mix in some specialty terms
+    let specialtyWords = [];
+    if (specialty && specialtyTerms[industry] && specialtyTerms[industry][specialty]) {
+      specialtyWords = specialtyTerms[industry][specialty];
+      // Randomly decide whether to use specialty term as suffix or in the name
+      if (Math.random() > 0.5) {
+        suffixes = [...suffixes, ...specialtyWords];
+      }
     }
     
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
     
-    // Generate company name
-    const companyName = `${prefix} ${suffix}`;
+    // Generate company name (occasionally include specialty in the middle)
+    let companyName;
+    if (specialtyWords.length > 0 && Math.random() < 0.3) {
+      const specialtyWord = specialtyWords[Math.floor(Math.random() * specialtyWords.length)];
+      companyName = `${prefix} ${specialtyWord} ${suffix}`;
+    } else {
+      companyName = `${prefix} ${suffix}`;
+    }
     
     // Generate scores that are somewhat related to the user's scores
     // We want some competitors to be better, some worse
@@ -1423,10 +1466,13 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
     // Calculate SEO strength
     const seoStrength = isTopCompetitor ? 75 + Math.random() * 25 : 40 + Math.random() * 40;
     
+    // Generate URLs 
+    const domain = companyName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') + '.com.au';
+    
     // Create the competitor object
     const competitor = {
       name: companyName,
-      url: "",
+      url: `https://www.${domain}`,
       expertiseScore,
       authorityScore,
       consistencyScore,
@@ -1436,7 +1482,9 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
       seoData: {
         traffic: traffic,
         socialFollowers: socialFollowers,
-        seoStrength: seoStrength
+        seoStrength: seoStrength,
+        keywords: Math.floor(traffic / 5) + Math.floor(Math.random() * 100),
+        backlinks: Math.floor(traffic / 10) + Math.floor(Math.random() * 50)
       },
       googleData: {
         rating: 3.5 + (Math.random() * 1.5), // 3.5 to 5.0
@@ -1459,6 +1507,10 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
       
       // Position in Digital Authority quadrant
       competitor.position = "DIGITAL AUTHORITY";
+      
+      // Improve Google data for boss competitor
+      competitor.googleData.rating = Math.min(5.0, 4.2 + (Math.random() * 0.8));
+      competitor.googleData.userRatingsTotal = Math.floor(Math.random() * 100) + 25; // 25 to 125
     }
     
     simulatedCompetitors.push(competitor);
