@@ -23,7 +23,7 @@ app.use(express.static('public'));
 const PORT = process.env.PORT || 3000;
 
 // Australian healthcare regulatory context
-const australianHealthcareRegulations = {
+const industryRegulations.Healthcare = {
   // Australian healthcare regulatory bodies
   regulatoryBodies: [
     "AHPRA", "Medical Board of Australia", "RACS", "ASPS", "ASAPS", 
@@ -624,21 +624,49 @@ function analyzeAuthorityIndex(content, industry, specialty = "") {
     // Add compliance boost to expertise
     expertiseSignals = Math.min(100, Math.round(expertiseSignals + (complianceScore * 0.2)));
     
-    // Adjust authority for regulatory limitations
-    if (industry === "Healthcare" || industry === "Finance" || industry === "Legal") {
-      digitalAuthority = adjustAuthorityForRegulations(digitalAuthority, industry, specialty);
+/**
+ * Adjusts authority scores based on industry-specific regulations
+ * @param {number} authorityScore - Original authority score
+ * @param {string} industry - The industry category
+ * @param {string} specialty - Optional specialty within the industry
+ * @returns {number} - Adjusted authority score
+ */
+function adjustAuthorityForRegulations(authorityScore, industry, specialty) {
+  // Base adjustment
+  let adjustedScore = authorityScore;
+  const industryData = industryRegulations[industry];
+  
+  if (!industryData) {
+    return authorityScore;
+  }
+  
+  // Check if this is a regulated industry with review limitations
+  let hasReviewLimitations = false;
+  
+  if (industryData.reviewLimitations) {
+    if (specialty && industryData.reviewLimitations[specialty]) {
+      hasReviewLimitations = true;
+    } else if (industryData.reviewLimitations["All"]) {
+      hasReviewLimitations = true;
     }
   }
   
-  // Get weights based on industry
-  const weights = getIndustryWeights(industry);
+  if (hasReviewLimitations) {
+    // For specialties where reviews are limited by regulation
+    // We need to adjust expectations for social proof
+    
+    // 1. Increase the baseline score to compensate for limitations
+    adjustedScore = Math.max(40, adjustedScore);
+    
+    // 2. Apply a scaling factor to compensate for review limitations
+    const scalingFactor = 1.25; // Compensate by 25%
+    adjustedScore = Math.min(100, adjustedScore * scalingFactor);
+    
+    console.log(`Adjusted authority score for regulated ${industry}/${specialty} from ${authorityScore} to ${adjustedScore}`);
+  }
   
-  // Calculate overall Authority Index with industry-specific weights
-  const authorityIndex = Math.round(
-    (expertiseSignals * weights.expertiseWeight) + 
-    (digitalAuthority * weights.authorityWeight) + 
-    (consistencyMarkers * weights.consistencyWeight)
-  );
+  return Math.round(adjustedScore);
+}
   
   // Determine position in the quadrant
   const position = determineMarketPosition(expertiseSignals, digitalAuthority);
@@ -910,7 +938,7 @@ function generateRecommendations(analysis, industry, specialty, contentAnalysis)
   
   // Check if this is a regulated healthcare specialty with review limitations
   const isRegulatedHealthcare = industry === "Healthcare" && 
-                               australianHealthcareRegulations.reviewLimitations[specialty];
+                               industryRegulations.Healthcare.reviewLimitations[specialty];
   
   // General recommendations based on position
   if (position === "TRADITIONAL AUTHORITY") {
