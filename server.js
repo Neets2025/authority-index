@@ -24,7 +24,6 @@ const PORT = process.env.PORT || 3000;
 
 // Australian healthcare regulatory context
 const industryRegulations = {
-  // Australian healthcare regulatory context
   "Healthcare": {
     // Regulatory bodies for validation
     regulatoryBodies: [
@@ -32,33 +31,6 @@ const industryRegulations = {
       "TGA", "Healthcare Complaints Commission"
     ],
     
-    // Industry-specific credentials
-    credentials: [
-      "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
-      "Registered Medical Practitioner"
-    ],
-    
-    // Terms related to compliance
-    complianceTerms: [
-      "AHPRA registered", "Medical Board of Australia", "code of conduct",
-      "Australian Standards", "health practitioner regulation"
-    ],
-    
-    // Review limitations by specialty
-    reviewLimitations: {
-      "Plastic Surgery": true,  // Has significant review limitations
-      "Cosmetic Surgery": true, // Has significant review limitations
-      "General Practice": false,
-      "Dentistry": false
-    },
-    
-    // Weight adjustments for industry
-    scoreWeightAdjustments: {
-      expertiseWeight: 0.5,     // Increased from 0.45 base
-      authorityWeight: 0.3,     // Decreased from 0.35 base
-      consistencyWeight: 0.2    // Unchanged
-    }
-  },
     // Industry-specific credentials
     credentials: [
       "FRACS", "MBBS", "BMed", "Fellow of", "Specialist Plastic Surgeon",
@@ -116,7 +88,7 @@ const industryRegulations = {
       consistencyWeight: 0.25   // Increased from 0.2 base
     }
   },
-  
+
   // Legal services regulatory context
   "Legal": {
     regulatoryBodies: [
@@ -144,7 +116,7 @@ const industryRegulations = {
       consistencyWeight: 0.25  // Increased from 0.2 base
     }
   },
-  
+
   // Construction industry regulatory context
   "Construction": {
     regulatoryBodies: [
@@ -173,79 +145,6 @@ const industryRegulations = {
     }
   },
 
-  /**
- * Industry-specific terminology collections
- * Used for expertise signal detection
- */
-const industryTerminology = {
-  "Healthcare": {
-    generalTerms: [
-      "patient", "care", "health", "treatment", "diagnosis", 
-      "medical", "clinical", "healthcare", "procedure", "consultation"
-    ],
-    specialtyTerms: {
-      "Plastic Surgery": [
-        "reconstruction", "cosmetic", "aesthetic", "surgery", "procedure",
-        "enhancement", "augmentation", "reduction", "lift", "reshape"
-      ],
-      "Cosmetic Surgery": [
-        "aesthetic", "enhancement", "beauty", "cosmetic", "elective",
-        "procedure", "rejuvenation", "transformation", "improvement", "appearance"
-      ],
-      "General Practice": [
-        "primary care", "preventive", "chronic", "family medicine", "checkup",
-        "vaccination", "screening", "referral", "holistic", "wellness"
-      ],
-      "Dentistry": [
-        "dental", "teeth", "oral health", "hygiene", "cleaning",
-        "filling", "crown", "implant", "whitening", "orthodontic"
-      ]
-    }
-  },
-  
-  "Construction": {
-    generalTerms: [
-      "build", "construction", "project", "design", "renovation",
-      "contractor", "building", "structure", "quality", "materials"
-    ]
-  },
-  
-  "Environmental": {
-    generalTerms: [
-      "sustainable", "environment", "eco-friendly", "conservation", "green",
-      "renewable", "efficiency", "impact", "assessment", "management"
-    ]
-  },
-  
-  "Technology": {
-    generalTerms: [
-      "software", "development", "solution", "innovation", "digital",
-      "technology", "system", "application", "platform", "integration"
-    ]
-  },
-  
-  "Finance": {
-    generalTerms: [
-      "financial", "investment", "planning", "wealth", "tax",
-      "retirement", "portfolio", "strategy", "risk", "management"
-    ]
-  },
-  
-  "Legal": {
-    generalTerms: [
-      "legal", "law", "advice", "counsel", "representation",
-      "litigation", "contract", "rights", "obligation", "compliance"
-    ]
-  },
-  
-  "Real Estate": {
-    generalTerms: [
-      "property", "real estate", "home", "buyer", "seller",
-      "market", "agent", "listing", "sale", "investment"
-    ]
-  }
-};
-  
   // Real Estate industry regulatory context
   "Real Estate": {
     regulatoryBodies: [
@@ -273,7 +172,7 @@ const industryTerminology = {
       consistencyWeight: 0.2   // Unchanged
     }
   },
-  
+
   // Default weights for industries without specific configurations
   "Default": {
     scoreWeightAdjustments: {
@@ -282,6 +181,7 @@ const industryTerminology = {
       consistencyWeight: 0.2
     }
   }
+};
 };
   ],
   
