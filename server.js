@@ -1532,6 +1532,10 @@ app.get('/api/test', (req, res) => {
 });
 
 // API endpoint for analyzing a website
+/**
+ * API endpoint for analyzing a website
+ * Calculates the Authority Index and provides recommendations
+ */
 app.post('/api/analyze', async (req, res) => {
   try {
     const { url, industry, specialty } = req.body;
@@ -1548,7 +1552,7 @@ app.post('/api/analyze', async (req, res) => {
     }
     
     // Fetch the page content
-    console.log(`Analyzing ${url} for ${industry} industry...`);
+    console.log(`Analyzing ${url} for ${industry} industry${specialty ? ', ' + specialty + ' specialty' : ''}...`);
     let pageContent;
     try {
       // Try DataForSEO first, fall back to direct fetch
@@ -1595,7 +1599,7 @@ app.post('/api/analyze', async (req, res) => {
     if (competitors.length === 0) {
       console.log('Generating simulated competitors...');
       
-      // Create dummy user data for simulation based on analysis results
+      // Create user data for simulation based on analysis results
       const userData = {
         expertiseScore: analysis.expertiseSignals,
         authorityScore: analysis.digitalAuthority,
@@ -1622,7 +1626,14 @@ app.post('/api/analyze', async (req, res) => {
     analysis.competitorInsights = competitorInsights;
     
     // Send the analysis results
-    return res.json({ analysis });
+    return res.json({ 
+      analysis,
+      meta: {
+        timestamp: new Date().toISOString(),
+        version: '1.1.0',
+        dataSource: dataForSeoError ? 'direct-fetch' : 'dataforseo'
+      }
+    });
     
   } catch (error) {
     console.error('Error in analysis:', error);
