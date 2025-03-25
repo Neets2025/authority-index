@@ -21,8 +21,6 @@ function init(login, password) {
 
 /**
  * Fetch content from a webpage using DataForSEO API
-/**
- * Fetch content from a webpage using DataForSEO API
  * @param {string} url - URL to fetch content from
  * @returns {Promise<string>} - Webpage content
  */
@@ -67,16 +65,34 @@ async function fetchContentFromDataForSEO(url) {
     if (response.data.tasks && 
         response.data.tasks[0] && 
         response.data.tasks[0].result && 
-        response.data.tasks[0].result[0] && 
-        response.data.tasks[0].result[0].items && 
-        response.data.tasks[0].result[0].items.length > 0) {
+        response.data.tasks[0].result[0]) {
       
-      const item = response.data.tasks[0].result[0].items[0];
-      const content = item.page_content || item.content || item.plain_text;
+      let content = '';
+      const result = response.data.tasks[0].result[0];
+      
+      // Log the entire result to see what fields are available
+      console.log('DataForSEO result structure:', JSON.stringify(result).substring(0, 1000));
+      
+      // Try different possible content fields
+      if (result.items && result.items.length > 0 && result.items[0].page_content) {
+        content = result.items[0].page_content;
+      } else if (result.items && result.items.length > 0 && result.items[0].content) {
+        content = result.items[0].content;
+      } else if (result.page_content) {
+        content = result.page_content;
+      } else if (result.content) {
+        content = result.content;
+      } else if (result.plain_text) {
+        content = result.plain_text;
+      } else if (result.items && result.items.length > 0 && result.items[0].html) {
+        // Extract text from HTML if available
+        const dom = new JSDOM(result.items[0].html);
+        content = dom.window.document.body.textContent || '';
+      }
       
       if (!content || content.length < 100) {
-        console.error('Content too short or empty:', content);
-        throw new Error('No substantial content retrieved');
+        console.error('DataForSEO content too short or empty:', content);
+        throw new Error('No substantial content retrieved from DataForSEO');
       }
       
       return content;
@@ -93,10 +109,11 @@ async function fetchContentFromDataForSEO(url) {
 /**
  * Fetch competitors for a website using DataForSEO API
  * @param {string} url - URL to find competitors for
+ * @param {string} industry - Industry category
  * @param {number} limit - Maximum number of competitors to return
  * @returns {Promise<Array>} - List of competitors
  */
-async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
+async function fetchCompetitorsFromDataForSEO(url, industry, limit = 5) {
   try {
     console.log(`Finding competitors for ${url} via SERP data...`);
     
@@ -109,8 +126,9 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
       throw new Error('Invalid URL format');
     }
     
-    // Create search term from domain name
-    const searchTerm = domain.split('.')[0] + ' healthcare';
+    // Create search term from domain name and industry
+    const searchTerm = domain.split('.')[0] + ' ' + (industry || '') + ' australia';
+    console.log(`Using search term: "${searchTerm}"`);
     
     const requestData = [{
       keyword: searchTerm,
@@ -148,10 +166,15 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
       
       const items = response.data.tasks[0].result[0].items;
       
-      // Filter to organic results and exclude the original domain
+      // Filter to organic results and exclude government websites and the original domain
       const domainRegex = new RegExp(domain.replace('.', '\\.'), 'i');
+      const govRegex = /\.(gov|edu|org|ac)\.(au|com)$/i;
       const competitorItems = items
-        .filter(item => item.type === 'organic' && !domainRegex.test(item.domain))
+        .filter(item => 
+          item.type === 'organic' && 
+          !domainRegex.test(item.domain) &&
+          !govRegex.test(item.domain)
+        )
         .slice(0, limit);
       
       // Transform to our format
@@ -177,7 +200,8 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
     console.error('Error finding competitors:', error.message);
     throw error;
   }
-}    
+}
+
 /**
  * Fallback function to fetch webpage content directly
  * @param {string} url - URL to fetch content from
