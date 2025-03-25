@@ -21,13 +21,18 @@ function init(login, password) {
 
 /**
  * Fetch content from a webpage using DataForSEO API
+/**
+ * Fetch content from a webpage using DataForSEO API
  * @param {string} url - URL to fetch content from
  * @returns {Promise<string>} - Webpage content
  */
-// For content fetching - update the URL and response handling
 async function fetchContentFromDataForSEO(url) {
   try {
     console.log(`Fetching content from DataForSEO for ${url}...`);
+    
+    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+      throw new Error('DataForSEO credentials not configured');
+    }
     
     // Format the request body according to documentation
     const requestData = [{
