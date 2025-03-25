@@ -49,7 +49,7 @@ async function analyzeWebsite(req, res) {
     
     try {
       // Try to fetch competitors from DataForSEO
-      competitors = await contentFetcher.fetchCompetitorsFromDataForSEO(url, 3);
+      competitors = await contentFetcher.fetchCompetitorsFromDataForSEO(url, industry, 3);
       console.log(`Found ${competitors.length} competitors via DataForSEO`);
     } catch (error) {
       dataForSeoError = error.message;
@@ -135,7 +135,7 @@ async function autoAnalyzeCompetitors(req, res) {
     let dataForSeoError = null;
     
     try {
-      competitors = await contentFetcher.fetchCompetitorsFromDataForSEO(url, 5);
+      competitors = await contentFetcher.fetchCompetitorsFromDataForSEO(url, industry, 3);
       console.log(`Found ${competitors.length} competitors via DataForSEO`);
     } catch (error) {
       dataForSeoError = error.message;
