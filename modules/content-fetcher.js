@@ -90,7 +90,12 @@ async function fetchContentFromDataForSEO(url) {
   }
 }
 
-// For competitor finding - use SERP data
+/**
+ * Fetch competitors for a website using DataForSEO API
+ * @param {string} url - URL to find competitors for
+ * @param {number} limit - Maximum number of competitors to return
+ * @returns {Promise<Array>} - List of competitors
+ */
 async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
   try {
     console.log(`Finding competitors for ${url} via SERP data...`);
@@ -105,7 +110,7 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
     }
     
     // Create search term from domain name
-    const searchTerm = domain.split('.')[0] + ' ' + (industry || '');
+    const searchTerm = domain.split('.')[0] + ' healthcare';
     
     const requestData = [{
       keyword: searchTerm,
@@ -172,7 +177,7 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
     console.error('Error finding competitors:', error.message);
     throw error;
   }
-}
+}    
 /**
  * Fallback function to fetch webpage content directly
  * @param {string} url - URL to fetch content from
