@@ -706,6 +706,31 @@
         height: 150px;
         font-size: 14px;
       }
+      .eclipse-explanation {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.blue-text {
+  color: #2b6cb0;
+  font-weight: 600;
+}
+.green-text {
+  color: #2f855a;
+  font-weight: 600;
+}
+.expertise-circle {
+  background-color: rgba(66, 153, 225, 0.25);
+  border: 3px solid rgba(66, 153, 225, 0.7);
+  color: #2b6cb0;
+  font-weight: 700;
+}
+.recognition-circle {
+  background-color: rgba(72, 187, 120, 0.25);
+  border: 3px solid rgba(72, 187, 120, 0.7);
+  color: #2f855a;
+  font-weight: 700;
+}
     }
   </style>
 </head>
@@ -896,19 +921,22 @@
         </div>
       </div>
       
-      <!-- Eclipse visualization -->
-      <div class="eclipse-container">
-        <h3>YOUR VISIBILITY</h3>
-        <div class="eclipse-diagram">
-          <div id="expertise-circle" class="eclipse-circle expertise-circle">
-            EXPERTISE
-          </div>
-          <div id="recognition-circle" class="eclipse-circle recognition-circle">
-            VISIBILITY
-          </div>
-        </div>
-      </div>
+     <!-- Eclipse visualization -->
+<div class="eclipse-container">
+  <h3>EXPERTISE VS. VISIBILITY</h3>
+  <p class="data-source-note">This visualization shows the balance between your demonstrated expertise and online visibility.</p>
+  <div class="eclipse-diagram">
+    <div id="expertise-circle" class="eclipse-circle expertise-circle">
+      EXPERTISE<br><span style="font-size: 14px; font-weight: 700;"></span>
     </div>
+    <div id="recognition-circle" class="eclipse-circle recognition-circle">
+      VISIBILITY<br><span style="font-size: 14px; font-weight: 700;"></span>
+    </div>
+  </div>
+  <div id="eclipse-explanation" class="eclipse-explanation">
+    <p>The <span class="blue-text">blue circle</span> represents your demonstrated expertise, while the <span class="green-text">green circle</span> shows your online visibility. Ideally, these should be balanced.</p>
+  </div>
+</div>
     
     <div class="card">
       <h2>
