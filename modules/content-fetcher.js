@@ -106,17 +106,28 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
       throw new Error('DataForSEO credentials not configured');
     }
     
-    // Format the request for the Competitors API
+    // Extract domain from URL for DataForSEO
+    let domain;
+    try {
+      const urlObj = new URL(url);
+      domain = urlObj.hostname.replace('www.', '');
+    } catch (error) {
+      throw new Error(`Invalid URL format: ${error.message}`);
+    }
+    
+    // Updated request body format for DataForSEO Competitors API
     const requestData = [{
-      target: url,
-      limit: limit
+      target: domain, // Use domain instead of full URL
+      limit: limit,
+      include_subdomains: true
     }];
     
     const authString = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
     
+    // Updated API endpoint URL
     const response = await axios({
       method: 'post',
-      url: 'https://api.dataforseo.com/v3/domain_analytics/relevant_pages/live',
+      url: 'https://api.dataforseo.com/v3/domain_analytics/competitors/live',
       headers: {
         'Authorization': `Basic ${authString}`,
         'Content-Type': 'application/json'
@@ -132,7 +143,7 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
       throw new Error(`DataForSEO API returned error: ${response.data?.status_message || 'Unknown error'}`);
     }
     
-    // Extract competitor information
+    // Updated response structure processing
     if (response.data.tasks && 
         response.data.tasks[0] && 
         response.data.tasks[0].result && 
@@ -144,16 +155,16 @@ async function fetchCompetitorsFromDataForSEO(url, limit = 5) {
       // Transform the competitor data into our format
       const competitors = competitorItems.map(item => {
         return {
-          name: item.domain,
-          url: 'https://' + item.domain,
-          relevanceScore: item.relevance || 0,
+          name: item.domain || item.competitor_domain || '',
+          url: 'https://' + (item.domain || item.competitor_domain || ''),
+          relevanceScore: item.relevance || item.intersections || 0,
           seoData: {
             traffic: item.metrics?.organic?.traffic || 0,
             keywords: item.metrics?.organic?.keywords || 0,
             backlinks: item.metrics?.backlinks?.referring_domains || 0
           }
         };
-      });
+      }).filter(comp => comp.name); // Filter out any items without a name
       
       return competitors;
     } else {
