@@ -35,7 +35,8 @@ async function fetchContentFromDataForSEO(url) {
     // Format the request body according to DataForSEO's specifications
     const requestData = [{
       url: url,
-      enable_javascript: true
+      enable_javascript: true,
+      enable_browser_rendering: true  // Add this to get more complete content
     }];
     
     // Using direct authentication in headers as recommended by DataForSEO
@@ -49,7 +50,7 @@ async function fetchContentFromDataForSEO(url) {
         'Content-Type': 'application/json'
       },
       data: requestData,
-      timeout: 30000 // Longer timeout for DataForSEO responses
+      timeout: 60000 // Increase timeout for content fetching
     });
     
     console.log('DataForSEO response status:', response.status);
@@ -68,7 +69,9 @@ async function fetchContentFromDataForSEO(url) {
         response.data.tasks[0].result[0].items && 
         response.data.tasks[0].result[0].items.length > 0) {
       
-      const content = response.data.tasks[0].result[0].items[0].page_content;
+      const content = response.data.tasks[0].result[0].items[0].page_content || 
+                      response.data.tasks[0].result[0].items[0].content || 
+                      response.data.tasks[0].result[0].items[0].plain_text;
       
       if (!content || content.length < 100) {
         console.error('DataForSEO content too short or empty:', content);
