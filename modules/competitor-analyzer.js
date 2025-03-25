@@ -418,7 +418,7 @@ function generateCompetitiveInsights(userData, competitors, industry) {
       // Craft the insight message
       insights.push({
         type: "competitor",
-        title: `${topCompetitor.name} Is The Boss`,
+        title: `${topCompetitor.name} Dominates Online`,
         message: `${topCompetitor.name} is investing in ${competitorStrength}, ${strengthData} and giving them a competitive advantage in online visibility.${competitiveGap}`
       });
       
