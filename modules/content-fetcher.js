@@ -73,6 +73,12 @@ async function fetchContentFromDataForSEO(url) {
       // Log the entire result to see what fields are available
       console.log('DataForSEO result structure:', JSON.stringify(result).substring(0, 1000));
       
+      // Direct fetch when we've confirmed the resource is available but content is truncated
+      if (result.items && result.items.length > 0 && result.items[0].resource_type === "html") {
+        console.log("DataForSEO provided truncated content, switching to direct fetch...");
+        return await fetchPageContent(url);
+      }
+      
       // Try different possible content fields
       if (result.items && result.items.length > 0 && result.items[0].page_content) {
         content = result.items[0].page_content;
@@ -126,15 +132,17 @@ async function fetchCompetitorsFromDataForSEO(url, industry, limit = 5) {
       throw new Error('Invalid URL format');
     }
     
-    // Create search term from domain name and industry
-    const searchTerm = domain.split('.')[0] + ' ' + (industry || '') + ' australia';
+    // Create a more targeted search term
+    const keywords = domain.split('.')[0].split('-');
+    const relevantKeyword = keywords.find(k => ['home', 'homes', 'build', 'builder', 'construction', 'renovations'].includes(k)) || keywords[0];
+    const searchTerm = industry + ' ' + relevantKeyword + ' australia';
     console.log(`Using search term: "${searchTerm}"`);
     
     const requestData = [{
       keyword: searchTerm,
       location_name: "Australia",
       language_name: "English",
-      depth: 10
+      depth: 20 // Increased depth to find more potential competitors
     }];
     
     const authString = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
@@ -166,21 +174,43 @@ async function fetchCompetitorsFromDataForSEO(url, industry, limit = 5) {
       
       const items = response.data.tasks[0].result[0].items;
       
-      // Filter to organic results and exclude government websites and the original domain
+      // Better filtering to exclude social media, government sites, and other non-competitors
       const domainRegex = new RegExp(domain.replace('.', '\\.'), 'i');
-      const govRegex = /\.(gov|edu|org|ac)\.(au|com)$/i;
+      const excludeRegex = /\.(gov|edu|org|ac)\.(au|com)$/i;
+      const socialMediaSites = ['instagram', 'facebook', 'twitter', 'linkedin', 'youtube', 'pinterest', 'tiktok', 'snapchat'];
+
       const competitorItems = items
-        .filter(item => 
-          item.type === 'organic' && 
-          !domainRegex.test(item.domain) &&
-          !govRegex.test(item.domain)
-        )
+        .filter(item => {
+          // Must be an organic result
+          if (item.type !== 'organic') return false;
+          
+          // Exclude the original domain
+          if (domainRegex.test(item.domain)) return false;
+          
+          // Exclude government/education sites
+          if (excludeRegex.test(item.domain)) return false;
+          
+          // Exclude social media platforms
+          if (socialMediaSites.some(social => item.domain.includes(social))) return false;
+          
+          // Exclude generic platforms that aren't direct competitors
+          const genericPlatforms = ['google', 'bing', 'yahoo', 'amazon', 'ebay', 'gumtree', 'seek', 'realestate', 'domain'];
+          if (genericPlatforms.some(platform => item.domain.includes(platform))) return false;
+          
+          return true;
+        })
         .slice(0, limit);
       
-      // Transform to our format
+      // Transform to our format with better name extraction
       const competitors = competitorItems.map(item => {
         return {
-          name: item.domain.replace(/\.(com|org|net|com\.au|org\.au|net\.au)$/i, ''),
+          // Extract a more readable business name from the domain
+          name: item.domain
+            .replace(/^www\./, '')
+            .replace(/\.(com|org|net|com\.au|org\.au|net\.au|io|co)$/i, '')
+            .split(/[.-]/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
           url: item.url,
           relevanceScore: Math.max(0, 100 - ((item.rank_position || 10) * 5)),
           seoData: {
