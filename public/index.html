@@ -1154,25 +1154,130 @@
       const existingMarkers = quadrant.querySelectorAll('.quadrant-entity');
       existingMarkers.forEach(marker => marker.remove());
       
-      // Position your website
+      // Get quadrant dimensions
+      const quadrantRect = quadrant.getBoundingClientRect();
+      const chartDimensions = {
+        width: quadrantRect.width,
+        height: quadrantRect.height
+      };
+      
+      // First, create the user entity
+      const userEntity = {
+        name: 'YOU',
+        expertiseScore: yourSite.expertiseScore,
+        authorityScore: yourSite.authorityScore,
+        isUser: true
+      };
+      
+      // Combine user entity with competitors
+      const allEntities = [userEntity, ...competitors];
+      
+      // Calculate non-overlapping positions for all entities
+      // This would normally be done on the server with the calculateCompetitorPositions function,
+      // but we'll recreate a simplified version here for the client-side
+      
+      const occupiedSpaces = [];
+      const circleRadius = 40; // Base circle radius
+      const padding = 15;      // Minimum padding between circles
+      
+      // Calculate positions for each entity
+      allEntities.forEach(entity => {
+        // Calculate initial position based on scores
+        const xPercent = entity.authorityScore / 100;
+        const yPercent = entity.expertiseScore / 100;
+        
+        // Adjust radius based on entity type
+        let radius;
+        if (entity.isUser) {
+          radius = 45; // Slightly larger for user
+        } else if (entity.isBoss) {
+          radius = 47; // Largest for boss competitor
+        } else {
+          radius = entity.isSimulated ? 35 : 40; // Smaller for simulated competitors
+        }
+        
+        // Convert to pixel positions
+        let x = Math.floor(xPercent * chartDimensions.width);
+        let y = Math.floor((1 - yPercent) * chartDimensions.height); // Invert Y axis
+        
+        // Find a non-overlapping position
+        let attempts = 0;
+        const maxAttempts = 50;
+        let isOverlapping = true;
+        
+        while (isOverlapping && attempts < maxAttempts) {
+          isOverlapping = false;
+          
+          // Check if this position overlaps with any occupied space
+          for (const space of occupiedSpaces) {
+            const distance = Math.sqrt(Math.pow(x - space.x, 2) + Math.pow(y - space.y, 2));
+            if (distance < (radius + space.radius + padding)) {
+              isOverlapping = true;
+              break;
+            }
+          }
+          
+          // Also check if it's too close to quadrant labels or borders
+          const borderPadding = radius + 40; // Avoid placing too close to edges
+          if (x < borderPadding || x > chartDimensions.width - borderPadding ||
+              y < borderPadding || y > chartDimensions.height - borderPadding) {
+            isOverlapping = true;
+          }
+          
+          if (isOverlapping) {
+            // Adjust position slightly - move in a spiral pattern
+            const angle = 0.5 * attempts;
+            const distance = 5 * Math.ceil(attempts / 6);
+            const deltaX = Math.cos(angle) * distance;
+            const deltaY = Math.sin(angle) * distance;
+            
+            // Keep the adjustment within the same quadrant if possible
+            x = Math.max(radius, Math.min(chartDimensions.width - radius, 
+                Math.floor(xPercent * chartDimensions.width) + deltaX));
+            y = Math.max(radius, Math.min(chartDimensions.height - radius, 
+                Math.floor((1 - yPercent) * chartDimensions.height) + deltaY));
+            
+            attempts++;
+          }
+        }
+        
+        // Record the occupied space
+        occupiedSpaces.push({
+          x,
+          y,
+          radius
+        });
+        
+        // Store position in entity
+        entity.chartPosition = {
+          x,
+          y,
+          radius
+        };
+      });
+      
+      // Now create and position the markers
+      
+      // First, create your website marker
+      const yourEntity = allEntities.find(entity => entity.isUser);
       const yourMarker = document.createElement('div');
       yourMarker.className = 'quadrant-entity you';
       yourMarker.textContent = 'YOU';
       
-      // Calculate position ensuring it's within bounds
-      const yourXPos = Math.min(95, Math.max(5, (yourSite.authorityScore / 100) * 100));
-      const yourYPos = Math.min(95, Math.max(5, 100 - (yourSite.expertiseScore / 100) * 100));
-      
-      yourMarker.style.left = `${yourXPos}%`;
-      yourMarker.style.top = `${yourYPos}%`;
+      // Position using the calculated coordinates
+      yourMarker.style.left = `${yourEntity.chartPosition.x}px`;
+      yourMarker.style.top = `${yourEntity.chartPosition.y}px`;
       
       // Add tooltip with scores
-      yourMarker.title = `Your scores: ${yourSite.expertiseScore} expertise, ${yourSite.authorityScore} authority`;
+      yourMarker.title = `Your scores: ${yourEntity.expertiseScore} expertise, ${yourEntity.authorityScore} authority`;
       
       quadrant.appendChild(yourMarker);
       
       // Add competitors to the quadrant
-      competitors.forEach((competitor, index) => {
+      competitors.forEach((competitor) => {
+        const entity = allEntities.find(e => e.name === competitor.name);
+        if (!entity || !entity.chartPosition) return;
+        
         const competitorMarker = document.createElement('div');
         
         // Determine marker class
@@ -1188,21 +1293,9 @@
                           competitor.name;
         competitorMarker.textContent = displayName;
         
-        // If this is "the boss", ensure it's positioned in a dominant position
-        let compXPos, compYPos;
-        
-        if (competitor.isBoss) {
-          // The boss should be in a position of strength, ideally Digital Authority
-          compXPos = Math.min(95, Math.max(65, (competitor.authorityScore || 75) / 100 * 100));
-          compYPos = Math.min(50, Math.max(5, 100 - ((competitor.expertiseScore || 70) / 100 * 100)));
-        } else {
-          // Regular competitors
-          compXPos = Math.min(95, Math.max(5, (competitor.authorityScore || 50) / 100 * 100));
-          compYPos = Math.min(95, Math.max(5, 100 - ((competitor.expertiseScore || 50) / 100 * 100)));
-        }
-        
-        competitorMarker.style.left = `${compXPos}%`;
-        competitorMarker.style.top = `${compYPos}%`;
+        // Position using the calculated coordinates
+        competitorMarker.style.left = `${entity.chartPosition.x}px`;
+        competitorMarker.style.top = `${entity.chartPosition.y}px`;
         
         // Add tooltip with full name and scores
         competitorMarker.title = `${competitor.name}: ${competitor.expertiseScore || '?'} expertise, ${competitor.authorityScore || '?'} authority`;
@@ -1217,57 +1310,100 @@
     function updateEclipseDiagram(expertiseScore, authorityScore) {
       const expertiseCircle = document.getElementById('expertise-circle');
       const recognitionCircle = document.getElementById('recognition-circle');
+      const eclipseExplanation = document.getElementById('eclipse-explanation');
       
-      // Base size for the circles
-      const baseSize = 220;
+      // Normalize scores
+      const expertise = Math.max(1, Math.min(100, expertiseScore));
+      const visibility = Math.max(1, Math.min(100, authorityScore));
       
-      // Calculate size adjustment based on scores (±40px)
-      const expertiseSizeAdjust = ((expertiseScore / 100) * 40) - 20;
-      const authoritySizeAdjust = ((authorityScore / 100) * 40) - 20;
+      // Base size for the circles - scales with score
+      const baseSize = 180;
+      const maxSizeAdjustment = 60;
+      
+      // Calculate size adjustment based on scores
+      const expertiseSizeAdjust = (expertise / 100) * maxSizeAdjustment;
+      const authoritySizeAdjust = (visibility / 100) * maxSizeAdjustment;
       
       // Calculate final sizes (ensure minimum size)
-      const expertiseSize = Math.max(180, baseSize + expertiseSizeAdjust);
-      const authoritySize = Math.max(180, baseSize + authoritySizeAdjust);
+      const expertiseSize = Math.max(140, baseSize + expertiseSizeAdjust);
+      const authoritySize = Math.max(140, baseSize + authoritySizeAdjust);
       
-      // Calculate overlap based on score similarity
-      // More similar scores = more overlap
-      const scoreDifference = Math.abs(expertiseScore - authorityScore);
-      const baseOverlap = 90; // base overlap in pixels
-      const overlapAdjustment = 80 * (1 - (scoreDifference / 100));
-      const totalOverlap = Math.max(40, baseOverlap + overlapAdjustment);
+      // Calculate positions based on score difference
+      const scoreDifference = expertise - visibility;
+      const maxOffset = 150; // maximum pixel offset for full eclipse
+      
+      // Calculate position offset - more difference = more offset
+      const offset = Math.min(maxOffset, Math.abs(scoreDifference) * 3);
       
       // Calculate positions for the circles based on diagram width
-      const diagramWidth = 500;
+      const diagramWidth = document.querySelector('.eclipse-diagram').offsetWidth || 500;
       
-      // Adjust positions based on circle sizes and desired overlap
-      const centerPoint = diagramWidth / 2;
-      const expertiseLeft = centerPoint - (expertiseSize / 2) - ((expertiseSize - totalOverlap) / 2);
-      const recognitionRight = centerPoint - (authoritySize / 2) + ((authoritySize - totalOverlap) / 2);
+      // Center point of the diagram
+      const centerX = diagramWidth / 2;
+      const centerY = 150; // vertical center of the diagram
       
-      // Set sizes and positions
+      // Position circles
+      if (scoreDifference > 0) {
+        // Expertise is higher - position visibility circle to the right
+        expertiseCircle.style.left = `${centerX - expertiseSize/2}px`;
+        recognitionCircle.style.left = `${centerX - authoritySize/2 + offset}px`;
+        expertiseCircle.style.right = ''; // Clear right property
+        recognitionCircle.style.right = ''; // Clear right property
+      } else {
+        // Visibility is higher or equal - position expertise circle to the left
+        expertiseCircle.style.left = `${centerX - expertiseSize/2 - offset}px`;
+        recognitionCircle.style.left = `${centerX - authoritySize/2}px`;
+        expertiseCircle.style.right = ''; // Clear right property
+        recognitionCircle.style.right = ''; // Clear right property
+      }
+      
+      // Set vertical position (centered)
+      expertiseCircle.style.top = `${centerY - expertiseSize/2}px`;
+      recognitionCircle.style.top = `${centerY - authoritySize/2}px`;
+      
+      // Set sizes
       expertiseCircle.style.width = `${expertiseSize}px`;
       expertiseCircle.style.height = `${expertiseSize}px`;
-      expertiseCircle.style.left = `${expertiseLeft}px`;
-      
       recognitionCircle.style.width = `${authoritySize}px`;
       recognitionCircle.style.height = `${authoritySize}px`;
-      recognitionCircle.style.right = `${recognitionRight}px`;
       
       // Adjust opacity based on score - higher score = more solid
-      expertiseCircle.style.opacity = 0.5 + (expertiseScore / 200);
-      recognitionCircle.style.opacity = 0.5 + (authorityScore / 200);
+      expertiseCircle.style.opacity = 0.6 + (expertise / 250);
+      recognitionCircle.style.opacity = 0.6 + (visibility / 250);
       
       // Add score indicators
-      expertiseCircle.innerHTML = `EXPERTISE<br><span style="font-size: 14px;">${expertiseScore}/100</span>`;
-      recognitionCircle.innerHTML = `VISIBILITY<br><span style="font-size: 14px;">${authorityScore}/100</span>`;
+      expertiseCircle.innerHTML = `EXPERTISE<br><span style="font-size: 14px; font-weight: 700;">${expertise}/100</span>`;
+      recognitionCircle.innerHTML = `VISIBILITY<br><span style="font-size: 14px; font-weight: 700;">${visibility}/100</span>`;
       
       // Adjust z-index based on which score is higher
-      if (expertiseScore > authorityScore) {
+      if (expertise > visibility) {
         expertiseCircle.style.zIndex = 2;
         recognitionCircle.style.zIndex = 1;
       } else {
         expertiseCircle.style.zIndex = 1;
         recognitionCircle.style.zIndex = 2;
+      }
+      
+      // Update explanation text based on the relationship between expertise and visibility
+      if (Math.abs(scoreDifference) > 20) {
+        // Significant imbalance
+        if (scoreDifference > 0) {
+          // Expertise eclipse
+          eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> significantly exceeds your <span class="green-text">online visibility (${visibility})</span>. This creates an "expertise eclipse" - your capabilities are hidden from potential clients online.</p>`;
+        } else {
+          // Visibility without expertise backing
+          eclipseExplanation.innerHTML = `<p>Your <span class="green-text">online visibility (${visibility})</span> exceeds your demonstrated <span class="blue-text">expertise (${expertise})</span>. Focus on enhancing your content to demonstrate your actual capabilities.</p>`;
+        }
+      } else if (Math.abs(scoreDifference) > 10) {
+        // Moderate imbalance
+        if (scoreDifference > 0) {
+          eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> is higher than your <span class="green-text">online visibility (${visibility})</span>. Work on improving your digital presence to showcase your skills better.</p>`;
+        } else {
+          eclipseExplanation.innerHTML = `<p>Your <span class="green-text">online visibility (${visibility})</span> is higher than your demonstrated <span class="blue-text">expertise (${expertise})</span>. Enhance your content to better showcase your capabilities.</p>`;
+        }
+      } else {
+        // Good balance
+        eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> and <span class="green-text">online visibility (${visibility})</span> are well-balanced. This is ideal for establishing strong digital authority.</p>`;
       }
     }
   </script>
