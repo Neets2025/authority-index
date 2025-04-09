@@ -1,6 +1,7 @@
 /**
  * Competitor Analysis Module
  * Handles competitor data gathering, simulation, and competitive insights
+ * Enhanced version with improved competitor selection and visualization positioning
  */
 
 const axios = require('axios');
@@ -40,9 +41,9 @@ async function searchBusinessByName(name, location) {
     
     const encodedName = encodeURIComponent(name);
     const encodedLocation = encodeURIComponent(location || '');
-    const locationBias = location ? `point:0,0` : ''; // Simplified location bias
+    const locationBias = location ? `&locationbias=point:0,0` : ''; // Simplified location bias
     
-    const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodedName}&inputtype=textquery&fields=place_id,name,formatted_address&key=${GOOGLE_PLACES_API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodedName}&inputtype=textquery&fields=place_id,name,formatted_address${locationBias}&key=${GOOGLE_PLACES_API_KEY}`;
     
     const response = await axios.get(url);
     const data = response.data;
@@ -105,6 +106,7 @@ async function getBusinessDetails(placeId) {
 
 /**
  * Generates simulated competitors when real data is unavailable
+ * Enhanced to consider specialty and location
  * @param {string} industry - The industry category
  * @param {string} specialty - Optional specialty within the industry
  * @param {Object} userData - User's website data
@@ -117,6 +119,31 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
   // Industry-specific business name prefixes and suffixes
   const prefixes = simulationData.industryPrefixes[industry] || simulationData.defaultPrefixes;
   let suffixes = simulationData.industrySuffixes[industry] || simulationData.defaultSuffixes;
+  
+  // Create specialty-specific name components if specialty is provided
+  let specialtyTerms = [];
+  if (specialty) {
+    // Map specialties to specific terms
+    const specialtyMap = {
+      "Plastic Surgery": ["Plastic", "Cosmetic", "Aesthetic", "Reconstructive"],
+      "Dental": ["Dental", "Orthodontic", "Periodontic"],
+      "Medical": ["Medical", "Health", "Wellness"],
+      "Construction": ["Home", "Building", "Renovation", "Custom"],
+      "Environmental": ["Green", "Sustainable", "Eco", "Natural"],
+      "Finance": ["Financial", "Wealth", "Investment", "Accounting"],
+      "Legal": ["Law", "Legal", "Justice", "Attorney"],
+      "Real Estate": ["Property", "Realty", "Estate", "Housing"]
+      // Add more specialties as needed
+    };
+    
+    specialtyTerms = specialtyMap[specialty] || [specialty];
+  }
+  
+  // Get location data if available
+  const userLocation = userData.location || '';
+  const locationTerms = userLocation ? userLocation.split(',').map(l => l.trim()) : [];
+  const userState = locationTerms.length > 0 ? locationTerms[locationTerms.length - 1] : '';
+  const userCity = locationTerms.length > 0 ? locationTerms[0] : '';
   
   // Helper function to fetch traffic data
   const getEstimatedTraffic = (industry, isTopCompetitor) => {
@@ -142,8 +169,43 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
     
-    // Generate company name
-    const companyName = `${prefix} ${suffix}`;
+    // Incorporate specialty into the name for some competitors
+    let companyName;
+    if (specialty && specialtyTerms.length > 0 && Math.random() > 0.4) {
+      const specialtyTerm = specialtyTerms[Math.floor(Math.random() * specialtyTerms.length)];
+      companyName = `${prefix} ${specialtyTerm} ${suffix}`;
+    } else {
+      companyName = `${prefix} ${suffix}`;
+    }
+    
+    // Add location to some competitor names
+    let competitorLocation = '';
+    if (locationTerms.length > 0) {
+      if (Math.random() > 0.6) {
+        // Use exact location sometimes
+        competitorLocation = userLocation;
+        
+        // Add location to name for some businesses
+        if (Math.random() > 0.7) {
+          companyName = `${companyName} ${userCity}`;
+        }
+      } else {
+        // Use same state but different local area
+        const nearbyAreas = [
+          "North", "South", "East", "West", "Central", 
+          "Greater", "Inner", "Outer", "Metro"
+        ];
+        
+        const areaPrefix = nearbyAreas[Math.floor(Math.random() * nearbyAreas.length)];
+        const localArea = `${areaPrefix} ${userCity}`;
+        competitorLocation = `${localArea}, ${userState}`;
+        
+        // Add location to name for some businesses
+        if (Math.random() > 0.7) {
+          companyName = `${companyName} ${localArea}`;
+        }
+      }
+    }
     
     // Generate scores that are somewhat related to the user's scores
     // We want some competitors to be better, some worse
@@ -173,8 +235,17 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
     // Calculate SEO strength
     const seoStrength = isTopCompetitor ? 75 + Math.random() * 25 : 40 + Math.random() * 40;
     
-    // Generate URLs 
-    const domain = companyName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '') + '.com.au';
+    // Generate URLs with specialty and location info
+    let domainBase = companyName.toLowerCase()
+                     .replace(/\s+/g, '')
+                     .replace(/[^a-z0-9]/g, '');
+    
+    // Limit domain length
+    if (domainBase.length > 20) {
+      domainBase = domainBase.substring(0, 20);
+    }
+    
+    const domain = `${domainBase}.com.au`;
     
     // Create the competitor object
     const competitor = {
@@ -186,6 +257,9 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
       position,
       isSimulated: true,
       isBoss: isTopCompetitor,
+      // Add specialty and location data
+      specialty: specialty || industry,
+      location: competitorLocation,
       seoData: {
         traffic: traffic,
         socialFollowers: socialFollowers,
@@ -544,12 +618,149 @@ async function processCompetitors(competitors, industry, specialty) {
   return enhancedCompetitors;
 }
 
-module.exports = {
-  init,
-  searchBusinessByName,
-  getBusinessDetails,
-  generateSimulatedCompetitors,
-  enhanceCompetitorData,
-  generateCompetitiveInsights,
-  processCompetitors
-};
+/**
+ * Calculates non-overlapping positions for competitors in the quadrant chart
+ * @param {Array} competitors - List of competitors
+ * @param {Object} chartDimensions - Chart width and height
+ * @returns {Array} - Competitors with position data
+ */
+/**
+ * Calculates non-overlapping positions for competitors in the quadrant chart
+ * Prevents circles from overlapping with each other and with chart labels
+ * @param {Array} competitors - List of competitors
+ * @param {Object} chartDimensions - Chart width and height
+ * @returns {Array} - Competitors with position data
+ */
+function calculateCompetitorPositions(competitors, chartDimensions = {width: 800, height: 600}) {
+  const positionedCompetitors = [...competitors];
+  const occupiedSpaces = [];
+  const circleRadius = 40; // Base circle radius
+  const padding = 15;      // Minimum padding between circles
+  
+  // Calculate positions for each competitor
+  for (let i = 0; i < positionedCompetitors.length; i++) {
+    const competitor = positionedCompetitors[i];
+    
+    // Calculate initial position based on scores
+    const xPercent = competitor.authorityScore / 100;
+    const yPercent = competitor.expertiseScore / 100;
+    
+    // Adjust radius based on significance (boss competitors are larger)
+    const radius = competitor.isBoss ? circleRadius * 1.2 : circleRadius;
+    
+    // Convert to pixel positions
+    let x = Math.floor(xPercent * chartDimensions.width);
+    let y = Math.floor((1 - yPercent) * chartDimensions.height); // Invert Y axis
+    
+    // Find a non-overlapping position
+    let attempts = 0;
+    const maxAttempts = 50;
+    let isOverlapping = true;
+    
+    while (isOverlapping && attempts < maxAttempts) {
+      isOverlapping = false;
+      
+      // Check if this position overlaps with any occupied space
+      for (const space of occupiedSpaces) {
+        const distance = Math.sqrt(Math.pow(x - space.x, 2) + Math.pow(y - space.y, 2));
+        if (distance < (radius + space.radius + padding)) {
+          isOverlapping = true;
+          break;
+        }
+      }
+      
+      // Also check if it's too close to quadrant labels or borders
+      const borderPadding = radius + 40; // Avoid placing too close to edges
+      if (x < borderPadding || x > chartDimensions.width - borderPadding ||
+          y < borderPadding || y > chartDimensions.height - borderPadding) {
+        isOverlapping = true;
+      }
+      
+      if (isOverlapping) {
+        // Adjust position slightly - move in a spiral pattern
+        const angle = 0.5 * attempts;
+        const distance = 5 * Math.ceil(attempts / 6);
+        const deltaX = Math.cos(angle) * distance;
+        const deltaY = Math.sin(angle) * distance;
+        
+        // Keep the adjustment within the same quadrant if possible
+        x = Math.max(radius, Math.min(chartDimensions.width - radius, 
+            Math.floor(xPercent * chartDimensions.width) + deltaX));
+        y = Math.max(radius, Math.min(chartDimensions.height - radius, 
+            Math.floor((1 - yPercent) * chartDimensions.height) + deltaY));
+        
+        attempts++;
+      }
+    }
+    
+    // Record the position
+    occupiedSpaces.push({
+      x,
+      y,
+      radius
+    });
+    
+    // Update competitor with position data
+    positionedCompetitors[i].chartPosition = {
+      x,
+      y,
+      radius
+    };
+  }
+  
+  return positionedCompetitors;
+}
+
+/**
+ * Creates a visually improved expertise eclipse visualization
+ * @param {number} expertiseScore - User's expertise score
+ * @param {number} visibilityScore - User's digital visibility/authority score
+ * @returns {Object} - Eclipse visualization data
+ */
+function generateEclipseVisualization(expertiseScore, visibilityScore) {
+  // Normalize scores to ensure they're within bounds
+  const expertise = Math.max(1, Math.min(100, expertiseScore));
+  const visibility = Math.max(1, Math.min(100, visibilityScore));
+  
+  // Calculate eclipse parameters based on scores
+  const eclipseData = {
+    expertise: {
+      size: expertise,
+      radius: Math.max(50, expertise * 1.5),
+      label: `EXPERTISE: ${expertise}/100`,
+      color: '#3B82F6', // Blue for expertise
+      opacity: 0.8,
+      position: {
+        x: 400,
+        y: 250
+      }
+    },
+    visibility: {
+      size: visibility,
+      radius: Math.max(50, visibility * 1.5),
+      label: `VISIBILITY: ${visibility}/100`,
+      color: '#10B981', // Green for visibility
+      opacity: 0.7,
+      position: {
+        x: 400 + ((expertise - visibility) * 1.5),
+        y: 250
+      }
+    },
+    isEclipsed: expertise > visibility + 15,
+    eclipsePercentage: expertise > visibility ? 
+      Math.min(100, Math.round(((expertise - visibility) / expertise) * 100)) : 0
+  };
+  
+  // Calculate label positions to ensure they're readable
+  eclipseData.expertise.labelPosition = {
+    x: eclipseData.expertise.position.x - (eclipseData.expertise.radius * 0.4),
+    y: eclipseData.expertise.position.y
+  };
+  
+  eclipseData.visibility.labelPosition = {
+    x: eclipseData.visibility.position.x - (eclipseData.visibility.radius * 0.4),
+    y: eclipseData.visibility.position.y + 30
+  };
+  
+  return eclipseData;
+}
