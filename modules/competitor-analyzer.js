@@ -764,3 +764,14 @@ function generateEclipseVisualization(expertiseScore, visibilityScore) {
   
   return eclipseData;
 }
+module.exports = {
+  init,
+  searchBusinessByName,
+  getBusinessDetails,
+  generateSimulatedCompetitors,
+  enhanceCompetitorData,
+  generateCompetitiveInsights,
+  processCompetitors,
+  calculateCompetitorPositions,
+  generateEclipseVisualization
+};
