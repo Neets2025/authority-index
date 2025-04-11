@@ -28,17 +28,29 @@
       --spacing-md: 15px;
       --spacing-lg: 25px;
       --spacing-xl: 40px;
+      
+      /* New MVP v2 colors */
+      --expertise-color: #3B82F6;
+      --communication-color: #F59E0B;
+      --audience-color: #10B981;
+      --poor-color: #EF4444;
+      --low-color: #F59E0B;
+      --medium-color: #3B82F6;
+      --high-color: #10B981;
     }
     
     /* Color definitions for rating bands */
+    .rating-poor {
+      color: var(--poor-color);
+    }
     .rating-low {
-      color: #e53e3e;
+      color: var(--low-color);
     }
     .rating-medium {
-      color: #ed8936;
+      color: var(--medium-color);
     }
     .rating-high {
-      color: #38a169;
+      color: var(--high-color);
     }
     
     /* Base styles */
@@ -186,15 +198,15 @@
     }
     
     .score-card.expertise {
-      border-top-color: var(--secondary-color);
+      border-top-color: var(--expertise-color);
     }
     
-    .score-card.authority {
-      border-top-color: var(--accent-color);
+    .score-card.audience {
+      border-top-color: var(--audience-color);
     }
     
-    .score-card.consistency {
-      border-top-color: var(--warning-color);
+    .score-card.communication {
+      border-top-color: var(--communication-color);
     }
     
     .score-card.overall {
@@ -239,23 +251,28 @@
       font-weight: 600;
     }
     
+    .score-band.poor {
+      background-color: #FEE2E2;
+      color: #EF4444;
+    }
+    
     .score-band.low {
-      background-color: #FED7D7;
-      color: #E53E3E;
+      background-color: #FEF3C7;
+      color: #F59E0B;
     }
     
     .score-band.medium {
-      background-color: #FEEBC8;
-      color: #DD6B20;
+      background-color: #DBEAFE;
+      color: #3B82F6;
     }
     
     .score-band.high {
-      background-color: #C6F6D5;
-      color: #38A169;
+      background-color: #D1FAE5;
+      color: #10B981;
     }
     
-    /* Eclipse alert */
-    .eclipse-alert {
+    /* Hidden expert alert */
+    .hidden-expert-alert {
       background-color: #fff3cd;
       border: 1px solid #ffecb5;
       color: #856404;
@@ -266,7 +283,7 @@
       align-items: flex-start;
     }
     
-    .eclipse-alert svg {
+    .hidden-expert-alert svg {
       margin-right: var(--spacing-sm);
       flex-shrink: 0;
     }
@@ -403,6 +420,12 @@
       transform: translate(-50%, -50%) scale(0.9);
     }
     
+    .quadrant-entity.industry {
+      background-color: #e4e4e7;
+      border: 2px solid #71717a;
+      font-size: 11px;
+    }
+    
     .axis-label {
       position: absolute;
       text-align: center;
@@ -522,12 +545,12 @@
       transform: translateY(-2px);
     }
 
-    .insight-card.boss {
+    .insight-card.competitor {
       background-color: #f0f9ff;
       border-left-color: #3b82f6;
     }
     
-    .insight-card.eclipse {
+    .insight-card.hidden {
       background-color: #fff8e1;
       border-left-color: #f6a609;
     }
@@ -541,6 +564,11 @@
       background-color: #f9f5ff;
       border-left-color: #805ad5;
     }
+    
+    .insight-card.average {
+      background-color: #f1f5f9;
+      border-left-color: #64748b;
+    }
 
     .insight-card h3 {
       margin-top: 0;
@@ -553,19 +581,87 @@
       margin-bottom: 0;
     }
     
-    /* Recommendations list */
-    .recommendations {
-      list-style-type: none;
-      padding: 0;
-      margin: 0;
+    /* Recommendations styles */
+    .recommendation-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-lg);
+      background-color: white;
+      overflow: hidden;
     }
     
-    .recommendations li {
+    .recommendation-header {
+      background-color: #f8fafc;
       padding: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .recommendation-header h3 {
+      margin: 0;
+      color: var(--primary-color);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .recommendation-category {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
+    .recommendation-category.expertise {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    
+    .recommendation-category.communication {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .recommendation-category.audience {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .recommendation-body {
+      padding: var(--spacing-md);
+    }
+    
+    .recommendation-description {
+      margin-bottom: var(--spacing-sm);
+      line-height: 1.5;
+    }
+    
+    .recommendation-impact {
+      background-color: #f1f5f9;
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-sm);
       margin-bottom: var(--spacing-md);
-      border-left: 4px solid var(--accent-color);
-      background-color: rgba(72, 187, 120, 0.05);
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-weight: 500;
+    }
+    
+    .recommendation-actions {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .recommendation-actions li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    
+    .recommendation-actions li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--primary-color);
+      font-weight: 600;
     }
     
     /* Data source note */
@@ -627,6 +723,25 @@
       text-align: center;
       font-size: 14px;
       color: var(--text-muted);
+    }
+    
+    /* AI Badge */
+    .ai-badge {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f0f9ff;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #3b82f6;
+      margin-left: 8px;
+    }
+    
+    .ai-badge svg {
+      height: 14px;
+      width: 14px;
+      margin-right: 4px;
     }
     
     /* Responsive styles */
@@ -706,31 +821,32 @@
         height: 150px;
         font-size: 14px;
       }
-      .eclipse-explanation {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 14px;
-}
-.blue-text {
-  color: #2b6cb0;
-  font-weight: 600;
-}
-.green-text {
-  color: #2f855a;
-  font-weight: 600;
-}
-.expertise-circle {
-  background-color: rgba(66, 153, 225, 0.25);
-  border: 3px solid rgba(66, 153, 225, 0.7);
-  color: #2b6cb0;
-  font-weight: 700;
-}
-.recognition-circle {
-  background-color: rgba(72, 187, 120, 0.25);
-  border: 3px solid rgba(72, 187, 120, 0.7);
-  color: #2f855a;
-  font-weight: 700;
-}
+    }
+    
+    .eclipse-explanation {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .blue-text {
+      color: #2b6cb0;
+      font-weight: 600;
+    }
+    .green-text {
+      color: #2f855a;
+      font-weight: 600;
+    }
+    .expertise-circle {
+      background-color: rgba(66, 153, 225, 0.25);
+      border: 3px solid rgba(66, 153, 225, 0.7);
+      color: #2b6cb0;
+      font-weight: 700;
+    }
+    .recognition-circle {
+      background-color: rgba(72, 187, 120, 0.25);
+      border: 3px solid rgba(72, 187, 120, 0.7);
+      color: #2f855a;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -805,7 +921,7 @@
         </select>
       </div>
       
-      <button type="submit" id="analyze-btn">Free Authority Index</button>
+      <button type="submit" id="analyze-btn">Free Authority Assessment</button>
       <p style="font-size: 12px; text-align: center; margin-top: 10px;">AI-Powered Website Assessment</p>
     </form>
     
@@ -817,64 +933,72 @@
   
   <div id="results" class="hidden">
     <div class="card">
-      <h2>Authority Index Results</h2>
+      <h2>Credibility Score Results
+        <span class="ai-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10a10 0 0 0 0-10"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          AI-Enhanced
+        </span>
+      </h2>
       
       <div class="scores-container">
         <div class="score-card expertise">
           <div class="score-label">
-            Expertise Signals
+            Expertise Validation
             <span class="tooltip">ⓘ
               <span class="tooltiptext">Measures how well your website content demonstrates your professional expertise and problem-solving capabilities</span>
             </span>
           </div>
           <div id="expertise-score" class="score-value">0<span class="out-of">/100</span></div>
-          <div class="score-description">How well your content demonstrates capability</div>
-          <div id="expertise-band" class="score-band medium">Medium</div>
+          <div class="score-description">Verifiable credentials and demonstrable experience</div>
+          <div id="expertise-band" class="score-band medium">MEDIUM</div>
         </div>
-        <div class="score-card authority">
+        <div class="score-card audience">
           <div class="score-label">
-            Digital Authority
+            Audience Trust
             <span class="tooltip">ⓘ
-              <span class="tooltiptext">Measures your online visibility, credibility signals, and external validation factors</span>
+              <span class="tooltiptext">Measures how audience behaviors indicate trust, including engagement metrics, sharing, and citations</span>
             </span>
           </div>
-          <div id="authority-score" class="score-value">0<span class="out-of">/100</span></div>
-          <div class="score-description">Your online visibility and credibility</div>
-          <div id="authority-band" class="score-band medium">Medium</div>
+          <div id="audience-score" class="score-value">0<span class="out-of">/100</span></div>
+          <div class="score-description">How audience behavior indicates trust</div>
+          <div id="audience-band" class="score-band medium">MEDIUM</div>
         </div>
-        <div class="score-card consistency">
+        <div class="score-card communication">
           <div class="score-label">
-            Consistency Markers
+            Communication Integrity
             <span class="tooltip">ⓘ
-              <span class="tooltiptext">Measures your brand voice consistency, messaging coherence, and content structure</span>
+              <span class="tooltiptext">Measures transparency, accuracy of claims, and consistency between stated values and actions</span>
             </span>
           </div>
-          <div id="consistency-score" class="score-value">0<span class="out-of">/100</span></div>
-          <div class="score-description">Messaging coherence and brand voice</div>
-          <div id="consistency-band" class="score-band medium">Medium</div>
+          <div id="communication-score" class="score-value">0<span class="out-of">/100</span></div>
+          <div class="score-description">Transparency and consistency of messaging</div>
+          <div id="communication-band" class="score-band medium">MEDIUM</div>
         </div>
         <div class="score-card overall">
           <div class="score-label">
-            Overall Authority Index
+            Overall Credibility Score
             <span class="tooltip">ⓘ
-              <span class="tooltiptext">The weighted average of all factors, indicating your overall digital market position</span>
+              <span class="tooltiptext">The weighted average of all factors, indicating your overall market credibility position</span>
             </span>
           </div>
           <div id="overall-score" class="score-value">0<span class="out-of">/100</span></div>
           <div class="score-description">Your overall market position</div>
-          <div id="overall-band" class="score-band medium">Medium</div>
+          <div id="overall-band" class="score-band medium">MEDIUM</div>
         </div>
       </div>
       
-      <!-- Expertise Eclipse alert - hidden by default -->
-      <div id="eclipse-alert" class="eclipse-alert hidden">
+      <!-- Hidden Expert alert - hidden by default -->
+      <div id="hidden-expert-alert" class="hidden-expert-alert hidden">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
         </svg>
         <div>
-          <strong>Expertise Eclipse Detected:</strong> Your expertise significantly outshines your digital visibility. This means potential clients may not be discovering your excellent capabilities online.
+          <strong>Hidden Expert Detected:</strong> Your expertise significantly outshines your online visibility. This means potential clients may not be discovering your excellent capabilities online.
         </div>
       </div>
       
@@ -899,60 +1023,61 @@
         <div class="quadrant-container" id="competitor-quadrant">
           <div class="quadrant-grid">
             <div class="quadrant top-left">
-              <div class="quadrant-label">TRADITIONAL AUTHORITY</div>
+              <div class="quadrant-label">HIDDEN EXPERT</div>
             </div>
             <div class="quadrant top-right">
-              <div class="quadrant-label">DIGITAL AUTHORITY</div>
+              <div class="quadrant-label">VERIFIED EXPERT</div>
             </div>
             <div class="quadrant bottom-left">
-              <div class="quadrant-label">LIMITED VISIBILITY</div>
+              <div class="quadrant-label">LOW PROFILE</div>
             </div>
             <div class="quadrant bottom-right">
-              <div class="quadrant-label">BORROWED AUTHORITY</div>
+              <div class="quadrant-label">VISIBILITY WITHOUT SUBSTANCE</div>
             </div>
           </div>
           
-          <div class="axis-label x-axis">ONLINE VISIBILITY</div>
-          <div class="axis-label y-axis">BRAND AUTHORITY</div>
+          <div class="axis-label x-axis">AUDIENCE TRUST</div>
+          <div class="axis-label y-axis">EXPERTISE VALIDATION</div>
         </div>
         
         <div class="data-source-note">
-          Calculated using website traffic/month, branded content in search, total social media followers and Google review scores.
+          Calculated utilizing DataForSEO estimated website traffic/month, branded content in search, total social media followers and Google review score. Industry average = 30 industry scores averaged.
         </div>
       </div>
       
-<!-- Eclipse visualization -->
-<div class="eclipse-container">
-  <h3>EXPERTISE VS. VISIBILITY</h3>
-  <p class="data-source-note">This visualization shows the balance between your demonstrated expertise and online visibility.</p>
-  <div class="eclipse-diagram">
-    <div id="expertise-circle" class="eclipse-circle expertise-circle">
-      EXPERTISE<br><span style="font-size: 14px; font-weight: 700;"></span>
+      <!-- Eclipse visualization -->
+      <div class="eclipse-container">
+        <h3>EXPERTISE VS. VISIBILITY</h3>
+        <p class="data-source-note">This visualization shows the balance between your demonstrated expertise and online visibility.</p>
+        <div class="eclipse-diagram">
+          <div id="expertise-circle" class="eclipse-circle expertise-circle">
+            EXPERTISE<br><span style="font-size: 14px; font-weight: 700;"></span>
+          </div>
+          <div id="recognition-circle" class="eclipse-circle recognition-circle">
+            VISIBILITY<br><span style="font-size: 14px; font-weight: 700;"></span>
+          </div>
+        </div>
+        <div id="eclipse-explanation" class="eclipse-explanation">
+          <p>The <span class="blue-text">blue circle</span> represents your demonstrated expertise, while the <span class="green-text">green circle</span> shows your online visibility. Ideally, these should be balanced.</p>
+        </div>
+      </div>
     </div>
-    <div id="recognition-circle" class="eclipse-circle recognition-circle">
-      VISIBILITY<br><span style="font-size: 14px; font-weight: 700;"></span>
-    </div>
-  </div>
-  <div id="eclipse-explanation" class="eclipse-explanation">
-    <p>The <span class="blue-text">blue circle</span> represents your demonstrated expertise, while the <span class="green-text">green circle</span> shows your online visibility. Ideally, these should be balanced.</p>
-  </div>
-</div>
     
     <div class="card">
       <h2>
         Recommendations
         <span class="tooltip">ⓘ
-          <span class="tooltiptext">Actionable steps to improve your website authority and digital presence</span>
+          <span class="tooltiptext">Actionable steps to improve your website credibility and digital presence</span>
         </span>
       </h2>
-      <ul id="recommendations" class="recommendations">
+      <div id="recommendations-container">
         <!-- Recommendations will be inserted here by JavaScript -->
-      </ul>
+      </div>
     </div>
   </div>
 
   <div class="footer">
-    <p>Powered by LABSOLUTELY.ai | Version 1.1.0 | <a href="#">Provide Feedback</a></p>
+    <p>Powered by LABSOLUTELY.ai | Version 2.0.0 | <a href="#">Provide Feedback</a></p>
   </div>
 
   <script>
@@ -1032,33 +1157,42 @@
     function displayResults(analysis) {
       // Update scores and rating bands
       document.getElementById('expertise-score').textContent = analysis.expertiseSignals;
-      document.getElementById('authority-score').textContent = analysis.digitalAuthority;
-      document.getElementById('consistency-score').textContent = analysis.consistencyMarkers;
-      document.getElementById('overall-score').textContent = analysis.authorityIndex;
+      document.getElementById('audience-score').textContent = analysis.digitalAuthority;
+      document.getElementById('communication-score').textContent = analysis.consistencyMarkers;
+      document.getElementById('overall-score').textContent = analysis.credibilityScore || analysis.authorityIndex;
       
       // Update rating bands
-      if (analysis.ratingBands) {
-        updateRatingBand('expertise-band', analysis.ratingBands.expertise);
-        updateRatingBand('authority-band', analysis.ratingBands.authority);
-        updateRatingBand('consistency-band', analysis.ratingBands.consistency);
-        updateRatingBand('overall-band', analysis.ratingBands.overall);
+      if (analysis.scoreLabels) {
+        updateRatingBand('expertise-band', analysis.scoreLabels.expertise);
+        updateRatingBand('audience-band', analysis.scoreLabels.audienceTrust);
+        updateRatingBand('communication-band', analysis.scoreLabels.communication);
+        updateRatingBand('overall-band', analysis.scoreLabels.overall);
       } else {
         // Fallback if rating bands aren't provided
         updateRatingBand('expertise-band', getRatingBand(analysis.expertiseSignals));
-        updateRatingBand('authority-band', getRatingBand(analysis.digitalAuthority));
-        updateRatingBand('consistency-band', getRatingBand(analysis.consistencyMarkers));
-        updateRatingBand('overall-band', getRatingBand(analysis.authorityIndex));
+        updateRatingBand('audience-band', getRatingBand(analysis.digitalAuthority));
+        updateRatingBand('communication-band', getRatingBand(analysis.consistencyMarkers));
+        updateRatingBand('overall-band', getRatingBand(analysis.credibilityScore || analysis.authorityIndex));
       }
       
       // Update diagnosis
       document.getElementById('diagnosis-content').textContent = analysis.diagnosis;
       
-      // Check for expertise eclipse
-      const eclipseAlert = document.getElementById('eclipse-alert');
-      if (analysis.hasExpertiseEclipse) {
-        eclipseAlert.classList.remove('hidden');
+      // Check for hidden expert
+      const hiddenExpertAlert = document.getElementById('hidden-expert-alert');
+      // Check if there's a hidden expert insight
+      const hasHiddenExpert = analysis.competitorInsights && 
+                             analysis.competitorInsights.some(insight => insight.type === "hidden");
+                             
+      // Or check traditional way
+      const isHiddenExpert = analysis.expertiseSignals >= 65 && 
+                            analysis.digitalAuthority < 50 && 
+                            (analysis.expertiseSignals - analysis.digitalAuthority >= 20);
+                            
+      if (hasHiddenExpert || isHiddenExpert) {
+        hiddenExpertAlert.classList.remove('hidden');
       } else {
-        eclipseAlert.classList.add('hidden');
+        hiddenExpertAlert.classList.add('hidden');
       }
       
       // Update Eclipse diagram
@@ -1070,14 +1204,7 @@
       }
       
       // Display recommendations
-      const recommendationsElement = document.getElementById('recommendations');
-      recommendationsElement.innerHTML = '';
-      
-      analysis.recommendations.forEach(rec => {
-        const li = document.createElement('li');
-        li.textContent = rec;
-        recommendationsElement.appendChild(li);
-      });
+      displayRecommendations(analysis.recommendations);
       
       // Display competitor information if available
       if (analysis.competitors && analysis.competitors.length > 0) {
@@ -1107,24 +1234,30 @@
       if (!element) return;
       
       // Remove existing classes
-      element.classList.remove('low', 'medium', 'high');
+      element.classList.remove('poor', 'low', 'medium', 'high');
+      
+      // Normalize rating (could be 'Low', 'LOW', etc.)
+      const normalizedRating = rating.toUpperCase();
       
       // Add new class and set text
-      if (rating === 'Low') {
+      if (normalizedRating === 'POOR') {
+        element.classList.add('poor');
+      } else if (normalizedRating === 'LOW') {
         element.classList.add('low');
-      } else if (rating === 'Medium') {
+      } else if (normalizedRating === 'MEDIUM') {
         element.classList.add('medium');
-      } else if (rating === 'High') {
+      } else if (normalizedRating === 'HIGH') {
         element.classList.add('high');
       }
       
-      element.textContent = rating;
+      element.textContent = normalizedRating;
     }
     
     function getRatingBand(score) {
-      if (score <= 40) return "Low";
-      if (score <= 70) return "Medium";
-      return "High";
+      if (score < 40) return "POOR";
+      if (score < 60) return "LOW";
+      if (score < 80) return "MEDIUM";
+      return "HIGH";
     }
     
     function displayCompetitiveInsights(insights) {
@@ -1144,6 +1277,101 @@
         insightCard.appendChild(title);
         insightCard.appendChild(message);
         insightsContainer.appendChild(insightCard);
+      });
+    }
+    
+    function displayRecommendations(recommendations) {
+      const container = document.getElementById('recommendations-container');
+      container.innerHTML = '';
+      
+      if (!recommendations || !Array.isArray(recommendations) || recommendations.length === 0) {
+        // Fallback if no proper recommendations are available
+        const fallbackList = document.createElement('ul');
+        fallbackList.className = 'recommendations';
+        
+        // Add generic recommendations
+        const rec1 = document.createElement('li');
+        rec1.textContent = 'Enhance your website content to better showcase your expertise and credentials.';
+        
+        const rec2 = document.createElement('li');
+        rec2.textContent = 'Improve your online visibility through SEO and relevant content marketing.';
+        
+        const rec3 = document.createElement('li');
+        rec3.textContent = 'Build trust through client testimonials, case studies, and transparent communication.';
+        
+        fallbackList.appendChild(rec1);
+        fallbackList.appendChild(rec2);
+        fallbackList.appendChild(rec3);
+        
+        container.appendChild(fallbackList);
+        return;
+      }
+      
+      // Handle structured recommendations
+      recommendations.forEach(rec => {
+        const card = document.createElement('div');
+        card.className = 'recommendation-card';
+        
+        // Header with category
+        const header = document.createElement('div');
+        header.className = 'recommendation-header';
+        
+        // Category badge
+        let categoryClass = '';
+        if (rec.category === 'EXPERTISE VALIDATION') {
+          categoryClass = 'expertise';
+        } else if (rec.category === 'AUDIENCE TRUST') {
+          categoryClass = 'audience';
+        } else if (rec.category === 'COMMUNICATION INTEGRITY') {
+          categoryClass = 'communication';
+        }
+        
+        const categoryBadge = document.createElement('div');
+        categoryBadge.className = `recommendation-category ${categoryClass}`;
+        categoryBadge.textContent = rec.category;
+        
+        const title = document.createElement('h3');
+        title.textContent = rec.title || 'Recommendation';
+        
+        header.appendChild(categoryBadge);
+        header.appendChild(title);
+        
+        // Body
+        const body = document.createElement('div');
+        body.className = 'recommendation-body';
+        
+        // Description
+        const description = document.createElement('p');
+        description.className = 'recommendation-description';
+        description.textContent = rec.description;
+        body.appendChild(description);
+        
+        // Impact
+        if (rec.impact) {
+          const impact = document.createElement('div');
+          impact.className = 'recommendation-impact';
+          impact.textContent = rec.impact;
+          body.appendChild(impact);
+        }
+        
+        // Action items
+        if (rec.actionItems && Array.isArray(rec.actionItems) && rec.actionItems.length > 0) {
+          const actionsList = document.createElement('ul');
+          actionsList.className = 'recommendation-actions';
+          
+          rec.actionItems.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            actionsList.appendChild(li);
+          });
+          
+          body.appendChild(actionsList);
+        }
+        
+        // Assemble and add to container
+        card.appendChild(header);
+        card.appendChild(body);
+        container.appendChild(card);
       });
     }
     
@@ -1169,6 +1397,22 @@
         isUser: true
       };
       
+      // Add industry average if not included in competitors
+      const hasIndustryAverage = competitors.some(c => c.name === 'INDUSTRY AVERAGE');
+      
+      if (!hasIndustryAverage) {
+        // Create a simulated industry average with reasonable scores
+        const industryAverage = {
+          name: 'INDUSTRY AVERAGE',
+          expertiseScore: 60, // Can be adjusted based on actual data
+          authorityScore: 60,
+          isIndustry: true
+        };
+        
+        // Add to competitors list
+        competitors = [...competitors, industryAverage];
+      }
+      
       // Combine user entity with competitors
       const allEntities = [userEntity, ...competitors];
       
@@ -1192,6 +1436,8 @@
           radius = 45; // Slightly larger for user
         } else if (entity.isBoss) {
           radius = 47; // Largest for boss competitor
+        } else if (entity.isIndustry) {
+          radius = 40; // Standard size for industry average
         } else {
           radius = entity.isSimulated ? 35 : 40; // Smaller for simulated competitors
         }
@@ -1269,12 +1515,29 @@
       yourMarker.style.top = `${yourEntity.chartPosition.y}px`;
       
       // Add tooltip with scores
-      yourMarker.title = `Your scores: ${yourEntity.expertiseScore} expertise, ${yourEntity.authorityScore} authority`;
+      yourMarker.title = `Your scores: ${yourEntity.expertiseScore} expertise, ${yourEntity.authorityScore} audience trust`;
       
       quadrant.appendChild(yourMarker);
       
+      // Add industry average
+      const industryEntity = allEntities.find(e => e.name === 'INDUSTRY AVERAGE');
+      if (industryEntity && industryEntity.chartPosition) {
+        const industryMarker = document.createElement('div');
+        industryMarker.className = 'quadrant-entity industry';
+        industryMarker.textContent = 'INDUSTRY AVG';
+        
+        // Position using the calculated coordinates
+        industryMarker.style.left = `${industryEntity.chartPosition.x}px`;
+        industryMarker.style.top = `${industryEntity.chartPosition.y}px`;
+        
+        // Add tooltip with scores
+        industryMarker.title = `Industry Average: ${industryEntity.expertiseScore} expertise, ${industryEntity.authorityScore} audience trust`;
+        
+        quadrant.appendChild(industryMarker);
+      }
+      
       // Add competitors to the quadrant
-      competitors.forEach((competitor) => {
+      competitors.filter(c => c.name !== 'INDUSTRY AVERAGE').forEach((competitor) => {
         const entity = allEntities.find(e => e.name === competitor.name);
         if (!entity || !entity.chartPosition) return;
         
@@ -1298,7 +1561,7 @@
         competitorMarker.style.top = `${entity.chartPosition.y}px`;
         
         // Add tooltip with full name and scores
-        competitorMarker.title = `${competitor.name}: ${competitor.expertiseScore || '?'} expertise, ${competitor.authorityScore || '?'} authority`;
+        competitorMarker.title = `${competitor.name}: ${competitor.expertiseScore || '?'} expertise, ${competitor.authorityScore || '?'} audience trust`;
         if (competitor.isSimulated) {
           competitorMarker.title += ' (simulated data)';
         }
@@ -1388,15 +1651,15 @@
       if (Math.abs(scoreDifference) > 20) {
         // Significant imbalance
         if (scoreDifference > 0) {
-          // Expertise eclipse
-          eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> significantly exceeds your <span class="green-text">online visibility (${visibility})</span>. This creates an "expertise eclipse" - your capabilities are hidden from potential clients online.</p>`;
+          // Hidden expert
+          eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> significantly exceeds your <span class="green-text">online visibility (${visibility})</span>. This creates a "hidden expert" effect - your capabilities are hidden from potential clients online.</p>`;
         } else {
           // Visibility without expertise backing
           eclipseExplanation.innerHTML = `<p>Your <span class="green-text">online visibility (${visibility})</span> exceeds your demonstrated <span class="blue-text">expertise (${expertise})</span>. Focus on enhancing your content to demonstrate your actual capabilities.</p>`;
         }
       } else if (Math.abs(scoreDifference) > 10) {
         // Moderate imbalance
-        if (scoreDifference > 0) {
+      if (scoreDifference > 0) {
           eclipseExplanation.innerHTML = `<p>Your <span class="blue-text">expertise (${expertise})</span> is higher than your <span class="green-text">online visibility (${visibility})</span>. Work on improving your digital presence to showcase your skills better.</p>`;
         } else {
           eclipseExplanation.innerHTML = `<p>Your <span class="green-text">online visibility (${visibility})</span> is higher than your demonstrated <span class="blue-text">expertise (${expertise})</span>. Enhance your content to better showcase your capabilities.</p>`;
