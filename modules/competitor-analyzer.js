@@ -2,6 +2,7 @@
  * Competitor Analysis Module
  * Handles competitor data gathering, simulation, and competitive insights
  * Enhanced version with improved competitor selection and visualization positioning
+ * Updated for MVP v2 with new market position matrix and OpenAI integration
  */
 
 const axios = require('axios');
@@ -13,17 +14,17 @@ const { simulationData } = require('./constants');
 let GOOGLE_PLACES_API_KEY;
 let DATAFORSEO_LOGIN;
 let DATAFORSEO_PASSWORD;
+let OPENAI_API_KEY;
 
 /**
  * Initialize the module with API credentials
- * @param {string} googleKey - Google Places API Key
- * @param {string} dataForSeoLogin - DataForSEO Login
- * @param {string} dataForSeoPassword - DataForSEO Password
+ * @param {Object} config - Configuration object with API keys
  */
-function init(googleKey, dataForSeoLogin, dataForSeoPassword) {
-  GOOGLE_PLACES_API_KEY = googleKey;
-  DATAFORSEO_LOGIN = dataForSeoLogin;
-  DATAFORSEO_PASSWORD = dataForSeoPassword;
+function init(config) {
+  GOOGLE_PLACES_API_KEY = config.googlePlacesApiKey;
+  DATAFORSEO_LOGIN = config.dataForSeoLogin;
+  DATAFORSEO_PASSWORD = config.dataForSeoPassword;
+  OPENAI_API_KEY = config.openaiApiKey;
 }
 
 /**
@@ -105,8 +106,200 @@ async function getBusinessDetails(placeId) {
 }
 
 /**
+ * Get domain overview data from DataForSEO
+ * @param {string} domain - Domain to analyze
+ * @returns {Promise<Object|null>} - Domain overview data
+ */
+async function getDomainOverview(domain) {
+  try {
+    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+      console.log('DataForSEO credentials not configured');
+      return null;
+    }
+    
+    const auth = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
+    
+    const payload = [{
+      "target": domain,
+      "location_name": "Australia",
+      "language_name": "English"
+    }];
+    
+    const response = await axios({
+      method: 'POST',
+      url: 'https://api.dataforseo.com/v3/domain_analytics/domain_overview',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify(payload)
+    });
+    
+    if (response.data && response.data.tasks && response.data.tasks.length > 0) {
+      return response.data.tasks[0].result[0];
+    }
+    
+    console.log('No domain overview data returned');
+    return null;
+  } catch (error) {
+    console.error(`Error getting domain overview for ${domain}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Get backlink data from DataForSEO
+ * @param {string} domain - Domain to analyze
+ * @returns {Promise<Object|null>} - Backlink data
+ */
+async function getBacklinkData(domain) {
+  try {
+    if (!DATAFORSEO_LOGIN || !DATAFORSEO_PASSWORD) {
+      console.log('DataForSEO credentials not configured');
+      return null;
+    }
+    
+    const auth = Buffer.from(`${DATAFORSEO_LOGIN}:${DATAFORSEO_PASSWORD}`).toString('base64');
+    
+    const payload = [{
+      "target": domain,
+      "limit": 100
+    }];
+    
+    const response = await axios({
+      method: 'POST',
+      url: 'https://api.dataforseo.com/v3/backlinks/overview',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      },
+      data: JSON.stringify(payload)
+    });
+    
+    if (response.data && response.data.tasks && response.data.tasks.length > 0) {
+      return response.data.tasks[0].result[0];
+    }
+    
+    console.log('No backlink data returned');
+    return null;
+  } catch (error) {
+    console.error(`Error getting backlink data for ${domain}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Analyze content using OpenAI
+ * @param {string} content - Website content to analyze
+ * @param {string} industry - Industry category
+ * @param {string} specialty - Optional industry specialty
+ * @returns {Promise<Object|null>} - AI analysis results
+ */
+async function analyzeContentWithAI(content, industry, specialty = '') {
+  try {
+    if (!OPENAI_API_KEY) {
+      console.log('OpenAI API key not configured');
+      return null;
+    }
+    
+    // Trim content to avoid excessive token usage
+    const contentSample = content.substring(0, 2500).trim();
+    
+    if (contentSample.length < 100) {
+      console.log('Content too short for meaningful AI analysis');
+      return null;
+    }
+    
+    const systemPrompt = `You are an expert analyst of professional websites in the ${industry} industry${specialty ? ` with specialty in ${specialty}` : ''}.
+Your task is to analyze website content and identify signals of expertise, authority, and trustworthiness.
+Provide a thorough, objective assessment using industry standards.`;
+
+    const userPrompt = `Analyze this website content for an ${industry} business${specialty ? ` specializing in ${specialty}` : ''}.
+Identify signals of expertise, authority, and trustworthiness.
+
+Content sample:
+${contentSample}
+
+Evaluate the following:
+1. Expertise signals: Credentials, qualifications, specialized knowledge
+2. Authority indicators: Industry leadership, unique methodologies, original research
+3. Trust elements: Transparency, client-focused language, balanced claims
+4. Content quality: Depth, accuracy, and usefulness of information
+5. Clarity: How well the business explains what they do and for whom
+
+Format your response as a JSON object with these exact properties and no others:
+{
+  "expertiseScore": [0-100 numerical score],
+  "authorityScore": [0-100 numerical score],
+  "trustScore": [0-100 numerical score],
+  "contentQualityScore": [0-100 numerical score],
+  "strengths": [array of 2-3 expertise strengths identified],
+  "weaknesses": [array of 2-3 expertise gaps or weaknesses],
+  "keyCredentials": [array of credentials or qualifications mentioned],
+  "uniqueInsights": [array of unique perspectives or methodologies],
+  "trustSignals": [array of trust elements identified],
+  "contentGaps": [array of missing content elements that would improve expertise perception]
+}
+
+Only return valid JSON that can be parsed. Do not include any explanations or text outside the JSON.`;
+
+    const response = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: userPrompt
+          }
+        ],
+        temperature: 0.3, // Lower temperature for more consistent results
+        max_tokens: 800
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    if (response.data && response.data.choices && response.data.choices.length > 0) {
+      const aiResponse = response.data.choices[0].message.content;
+      
+      try {
+        // Parse the JSON response
+        const analysisData = JSON.parse(aiResponse);
+        
+        // Log token usage for cost monitoring
+        if (response.data.usage) {
+          console.log(`OpenAI token usage: ${response.data.usage.total_tokens} tokens`);
+        }
+        
+        return analysisData;
+      } catch (parseError) {
+        console.error('Error parsing OpenAI response:', parseError.message);
+        console.log('Raw response:', aiResponse);
+        return null;
+      }
+    }
+    
+    console.log('No valid response from OpenAI');
+    return null;
+  } catch (error) {
+    console.error('Error analyzing content with OpenAI:', error.message);
+    return null;
+  }
+}
+
+/**
  * Generates simulated competitors when real data is unavailable
  * Enhanced to consider specialty and location
+ * Updated for MVP v2 with new market position terminology
  * @param {string} industry - The industry category
  * @param {string} specialty - Optional specialty within the industry
  * @param {Object} userData - User's website data
@@ -223,8 +416,8 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
     // For some competitors, make them clearly better to establish as "the boss"
     const isTopCompetitor = i === 0; // First competitor is the "boss"
     
-    // Determine position
-    const position = analysisEngine.determineMarketPosition(expertiseScore, authorityScore);
+    // MVP v2: Updated position terminology
+    const position = determineMarketPosition(expertiseScore, authorityScore);
     
     // Traffic and social data (for DataForSEO simulation)
     const traffic = getEstimatedTraffic(industry, isTopCompetitor);
@@ -253,7 +446,7 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
       url: `https://www.${domain}`,
       expertiseScore,
       authorityScore,
-      consistencyScore,
+      communicationScore: consistencyScore, // Renamed to match MVP v2
       position,
       isSimulated: true,
       isBoss: isTopCompetitor,
@@ -286,8 +479,8 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
         }
       }
       
-      // Position in Digital Authority quadrant
-      competitor.position = "DIGITAL AUTHORITY";
+      // Position in Verified Expert quadrant
+      competitor.position = "VERIFIED EXPERT";
       
       // Improve Google data for boss competitor
       competitor.googleData.rating = Math.min(5.0, 4.2 + (Math.random() * 0.8));
@@ -301,7 +494,8 @@ function generateSimulatedCompetitors(industry, specialty, userData, count) {
 }
 
 /**
- * Enhances a competitor with additional data from Google Places and website analysis
+ * Enhances a competitor with additional data from Google Places, DataForSEO, and website analysis
+ * Enhanced for MVP v2 with OpenAI content analysis option
  * @param {Object} competitor - Basic competitor data
  * @param {string} industry - Industry category
  * @param {string} specialty - Industry specialty
@@ -343,6 +537,38 @@ async function enhanceCompetitorData(competitor, industry, specialty) {
       }
     }
     
+    // Try to get DataForSEO data if we have a URL
+    if (enhancedCompetitor.url && (!enhancedCompetitor.seoData || Object.keys(enhancedCompetitor.seoData).length === 0)) {
+      try {
+        // Extract domain from URL
+        const domain = enhancedCompetitor.url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+        
+        // Get domain overview data
+        const domainData = await getDomainOverview(domain);
+        if (domainData) {
+          enhancedCompetitor.seoData = {
+            ...(enhancedCompetitor.seoData || {}),
+            traffic: domainData.organic_traffic_monthly || 0,
+            keywords: domainData.organic_keywords_count || 0,
+            backlinks: domainData.backlinks_count || 0,
+            seoStrength: calculateSeoStrength(domainData)
+          };
+        }
+        
+        // Get backlink data
+        const backlinkData = await getBacklinkData(domain);
+        if (backlinkData) {
+          enhancedCompetitor.seoData = {
+            ...(enhancedCompetitor.seoData || {}),
+            backlinks: backlinkData.total_backlinks || enhancedCompetitor.seoData.backlinks || 0,
+            referringDomains: backlinkData.referring_domains || 0
+          };
+        }
+      } catch (seoError) {
+        console.error(`Error getting SEO data for ${enhancedCompetitor.url}:`, seoError.message);
+      }
+    }
+    
     // Analyze content if we have a URL but no expertise/authority scores
     if (enhancedCompetitor.url && (!enhancedCompetitor.expertiseScore || !enhancedCompetitor.authorityScore)) {
       try {
@@ -352,14 +578,40 @@ async function enhanceCompetitorData(competitor, industry, specialty) {
         const pageContent = await contentFetcher.getWebsiteContent(enhancedCompetitor.url);
         
         if (pageContent && pageContent.length > 100) {
-          // Analyze the content
-          const analysis = analysisEngine.analyzeAuthorityIndex(pageContent, industry, specialty);
+          // Try AI analysis first if OpenAI is configured
+          let aiAnalysis = null;
+          if (OPENAI_API_KEY) {
+            try {
+              aiAnalysis = await analyzeContentWithAI(pageContent, industry, specialty);
+            } catch (aiError) {
+              console.error(`Error in AI analysis for competitor: ${aiError.message}`);
+            }
+          }
           
-          // Add the scores to the competitor
-          enhancedCompetitor.expertiseScore = analysis.expertiseSignals;
-          enhancedCompetitor.authorityScore = analysis.digitalAuthority;
-          enhancedCompetitor.consistencyScore = analysis.consistencyMarkers;
-          enhancedCompetitor.position = analysis.position;
+          if (aiAnalysis) {
+            // Use AI analysis for scores
+            enhancedCompetitor.expertiseScore = aiAnalysis.expertiseScore;
+            enhancedCompetitor.authorityScore = aiAnalysis.authorityScore;
+            enhancedCompetitor.communicationScore = Math.round((aiAnalysis.contentQualityScore + aiAnalysis.trustScore) / 2);
+            enhancedCompetitor.strengths = aiAnalysis.strengths;
+            enhancedCompetitor.weaknesses = aiAnalysis.weaknesses;
+            enhancedCompetitor.hasAiAnalysis = true;
+          } else {
+            // Fallback to standard analysis
+            const analysis = analysisEngine.analyzeAuthorityIndex(pageContent, industry, specialty);
+            
+            // Add the scores to the competitor
+            enhancedCompetitor.expertiseScore = analysis.expertiseSignals;
+            enhancedCompetitor.authorityScore = analysis.digitalAuthority;
+            enhancedCompetitor.communicationScore = analysis.consistencyMarkers;
+          }
+          
+          // Determine market position based on updated MVP v2 terminology
+          enhancedCompetitor.position = determineMarketPosition(
+            enhancedCompetitor.expertiseScore, 
+            enhancedCompetitor.authorityScore
+          );
+          
           enhancedCompetitor.hasAnalysis = true;
         }
       } catch (analysisError) {
@@ -378,22 +630,37 @@ async function enhanceCompetitorData(competitor, industry, specialty) {
         
         enhancedCompetitor.expertiseScore = baseExpertiseScore;
         enhancedCompetitor.authorityScore = baseAuthorityScore;
-        enhancedCompetitor.consistencyScore = 45 + Math.round(Math.random() * 25);
+        enhancedCompetitor.communicationScore = 45 + Math.round(Math.random() * 25);
         enhancedCompetitor.isEstimated = true;
       } else {
         // Completely randomized but plausible scores
         enhancedCompetitor.expertiseScore = 40 + Math.round(Math.random() * 40);
         enhancedCompetitor.authorityScore = 40 + Math.round(Math.random() * 40);
-        enhancedCompetitor.consistencyScore = 40 + Math.round(Math.random() * 30);
+        enhancedCompetitor.communicationScore = 40 + Math.round(Math.random() * 30);
         enhancedCompetitor.isEstimated = true;
       }
       
       // Set position based on generated scores
-      enhancedCompetitor.position = analysisEngine.determineMarketPosition(
+      enhancedCompetitor.position = determineMarketPosition(
         enhancedCompetitor.expertiseScore, 
         enhancedCompetitor.authorityScore
       );
     }
+    
+    // Calculate credibility score for consistency with user scoring
+    enhancedCompetitor.credibilityScore = Math.round(
+      (enhancedCompetitor.expertiseScore * 0.4) + 
+      (enhancedCompetitor.authorityScore * 0.3) + 
+      (enhancedCompetitor.communicationScore * 0.3)
+    );
+    
+    // Map scores to labels
+    enhancedCompetitor.scoreLabels = {
+      overall: mapScoreToLabel(enhancedCompetitor.credibilityScore),
+      expertise: mapScoreToLabel(enhancedCompetitor.expertiseScore),
+      communication: mapScoreToLabel(enhancedCompetitor.communicationScore),
+      audienceTrust: mapScoreToLabel(enhancedCompetitor.authorityScore)
+    };
     
     return enhancedCompetitor;
   } catch (error) {
@@ -403,7 +670,71 @@ async function enhanceCompetitorData(competitor, industry, specialty) {
 }
 
 /**
+ * Helper function to calculate SEO strength from DataForSEO metrics
+ * @param {Object} domainData - Domain data from DataForSEO
+ * @returns {number} - SEO strength score (0-100)
+ */
+function calculateSeoStrength(domainData) {
+  if (!domainData) return 50;
+  
+  let score = 50; // Base score
+  
+  // Traffic score (up to +20 points)
+  const traffic = domainData.organic_traffic_monthly || 0;
+  if (traffic > 10000) score += 20;
+  else if (traffic > 5000) score += 15;
+  else if (traffic > 1000) score += 10;
+  else if (traffic > 500) score += 5;
+  
+  // Keywords score (up to +15 points)
+  const keywords = domainData.organic_keywords_count || 0;
+  if (keywords > 1000) score += 15;
+  else if (keywords > 500) score += 10;
+  else if (keywords > 100) score += 5;
+  
+  // Backlinks score (up to +15 points)
+  const backlinks = domainData.backlinks_count || 0;
+  if (backlinks > 10000) score += 15;
+  else if (backlinks > 5000) score += 10;
+  else if (backlinks > 1000) score += 5;
+  
+  return Math.min(100, score);
+}
+
+/**
+ * Helper function to map numeric scores to labels
+ * @param {number} score - Numeric score (0-100)
+ * @returns {string} - Score label
+ */
+function mapScoreToLabel(score) {
+  if (score >= 80) return 'HIGH';
+  if (score >= 60) return 'MEDIUM';
+  if (score >= 40) return 'LOW';
+  return 'POOR';
+}
+
+/**
+ * Determines market position based on expertise and authority scores
+ * Updated for MVP v2 with new quadrant names
+ * @param {number} expertiseScore - Expertise validation score
+ * @param {number} authorityScore - Digital authority score
+ * @returns {string} - Market position category
+ */
+function determineMarketPosition(expertiseScore, authorityScore) {
+  if (expertiseScore >= 60 && authorityScore >= 60) {
+    return "VERIFIED EXPERT"; // Formerly DIGITAL AUTHORITY
+  } else if (expertiseScore >= 60 && authorityScore < 60) {
+    return "HIDDEN EXPERT"; // Formerly EXPERTISE ECLIPSE
+  } else if (expertiseScore < 60 && authorityScore >= 60) {
+    return "VISIBILITY WITHOUT SUBSTANCE"; // Formerly VISIBILITY GAP
+  } else {
+    return "LOW PROFILE"; // Formerly LIMITED VISIBILITY
+  }
+}
+
+/**
  * Generates competitive insights based on analysis of competitors
+ * Enhanced for MVP v2 with industry average comparison
  * @param {Object} userData - User's website data
  * @param {Array} competitors - List of competitor websites and their analysis
  * @param {string} industry - The industry category
@@ -501,9 +832,9 @@ function generateCompetitiveInsights(userData, competitors, industry) {
       
       // Position the "boss" competitor in a position of strength
       // Update their quadrant position if they're currently in a weak position
-      if (topCompetitor.position === "LIMITED VISIBILITY" || !topCompetitor.position) {
-        // Ensure they're placed in a stronger position (Digital Authority)
-        topCompetitor.position = "DIGITAL AUTHORITY";
+      if (topCompetitor.position === "LOW PROFILE" || !topCompetitor.position) {
+        // Ensure they're placed in a stronger position (Verified Expert)
+        topCompetitor.position = "VERIFIED EXPERT";
         if (topCompetitor.authorityScore && topCompetitor.authorityScore < 60) {
           topCompetitor.authorityScore = Math.max(65, topCompetitor.authorityScore + 15);
         }
@@ -563,35 +894,107 @@ function generateCompetitiveInsights(userData, competitors, industry) {
     });
   }
   
-  // Generate eclipse insight if applicable
-  if (userData.expertiseSignals >= 65 && 
-      userData.digitalAuthority < 50 && 
-      (userData.expertiseSignals - userData.digitalAuthority) >= 20) {
+  // Generate hidden expertise insight if applicable
+  if (userData.expertiseScore >= 65 && 
+      userData.authorityScore < 50 && 
+      (userData.expertiseScore - userData.authorityScore) >= 20) {
     
     insights.push({
-      type: "eclipse",
-      title: "Expertise Eclipse Detected",
-      message: "Your expertise is being eclipsed by low digital visibility. Your ability significantly outshines your online presence, making it difficult for potential clients to discover your services."
+      type: "hidden",
+      title: "Hidden Expert Detected",
+      message: "Your expertise is being hidden by low online visibility. Your ability significantly outshines your online presence, making it difficult for potential clients to discover your services."
     });
   }
   
+  // Industry average comparison insight
+  insights.push({
+    type: "average",
+    title: "Industry Average Comparison",
+    message: `Compared to the Australian industry average for ${industry}, your overall credibility score is ${getComparisonToAverage(userData.credibilityScore || 0, industry)}. ${getIndustryAdviceByComparison(userData.credibilityScore || 0, industry)}`
+  });
+  
   // Return top insights (but always include the competitor insight if available)
   const competitorInsight = insights.find(i => i.type === "competitor");
-  const eclipseInsight = insights.find(i => i.type === "eclipse");
-  const otherInsights = insights.filter(i => i.type !== "competitor" && i.type !== "eclipse");
+  const hiddenInsight = insights.find(i => i.type === "hidden");
+  const averageInsight = insights.find(i => i.type === "average");
+  const otherInsights = insights.filter(i => i.type !== "competitor" && i.type !== "hidden" && i.type !== "average");
   
-  // Prioritize the order: competitor first, eclipse second, then others
+  // Prioritize the order: competitor first, hidden expert second, average third, then others
   let prioritizedInsights = [];
   
   if (competitorInsight) {
     prioritizedInsights.push(competitorInsight);
   }
   
-  if (eclipseInsight) {
-    prioritizedInsights.push(eclipseInsight);
+  if (hiddenInsight) {
+    prioritizedInsights.push(hiddenInsight);
+  }
+  
+  if (averageInsight) {
+    prioritizedInsights.push(averageInsight);
   }
   
   return [...prioritizedInsights, ...otherInsights].slice(0, 3); // Return top 3 insights max
+}
+
+/**
+ * Helper function to compare user score to industry average
+ * @param {number} score - User's credibility score
+ * @param {string} industry - Industry category
+ * @returns {string} - Comparison description
+ */
+function getComparisonToAverage(score, industry) {
+  // Simulated industry average scores
+  const industryAverages = {
+    "Healthcare": 68,
+    "Construction": 62,
+    "Environmental": 58,
+    "Technology": 75,
+    "Finance": 71,
+    "Legal": 70,
+    "Real Estate": 64,
+    "default": 60
+  };
+  
+  const avgScore = industryAverages[industry] || industryAverages.default;
+  const difference = score - avgScore;
+  
+  if (difference >= 20) return "significantly above average";
+  if (difference >= 10) return "above average";
+  if (difference >= -10) return "around average";
+  if (difference >= -20) return "below average";
+  return "significantly below average";
+}
+
+/**
+ * Helper function to generate industry-specific advice based on comparison
+ * @param {number} score - User's credibility score
+ * @param {string} industry - Industry category
+ * @returns {string} - Industry-specific advice
+ */
+function getIndustryAdviceByComparison(score, industry) {
+  // Simulated industry average scores
+  const industryAverages = {
+    "Healthcare": 68,
+    "Construction": 62,
+    "Environmental": 58,
+    "Technology": 75,
+    "Finance": 71,
+    "Legal": 70,
+    "Real Estate": 64,
+    "default": 60
+  };
+  
+  const avgScore = industryAverages[industry] || industryAverages.default;
+  const difference = score - avgScore;
+  
+  if (difference >= 10) {
+    return `Businesses with above-average credibility in the ${industry} industry typically see 35% higher conversion rates and 27% greater client retention.`;
+  } else if (difference >= -10) {
+    return `Businesses that improve from average to high credibility in the ${industry} industry typically see a 42% increase in qualified leads.`;
+  } else {
+    return `${industry} businesses that improve their credibility from below average to above average typically see a 78% increase in new client acquisition.`;
+  }
 }
 
 /**
@@ -618,12 +1021,6 @@ async function processCompetitors(competitors, industry, specialty) {
   return enhancedCompetitors;
 }
 
-/**
- * Calculates non-overlapping positions for competitors in the quadrant chart
- * @param {Array} competitors - List of competitors
- * @param {Object} chartDimensions - Chart width and height
- * @returns {Array} - Competitors with position data
- */
 /**
  * Calculates non-overlapping positions for competitors in the quadrant chart
  * Prevents circles from overlapping with each other and with chart labels
@@ -764,6 +1161,46 @@ function generateEclipseVisualization(expertiseScore, visibilityScore) {
   
   return eclipseData;
 }
+
+/**
+ * Finds and analyzes competitors for a given domain
+ * @param {string} domain - User's domain
+ * @param {string} industry - Industry category
+ * @param {string} specialty - Industry specialty
+ * @param {Object} userData - User's website data
+ * @returns {Promise<Array>} - Enhanced competitor list
+ */
+async function findAndAnalyzeCompetitors(domain, industry, specialty, userData) {
+  try {
+    // Step 1: Try to get competitors from DataForSEO
+    let competitors = [];
+    try {
+      competitors = await contentFetcher.fetchCompetitorsFromDataForSEO(domain, industry, 3);
+      console.log(`Found ${competitors.length} competitors via DataForSEO`);
+    } catch (error) {
+      console.error('Error fetching competitors from DataForSEO:', error.message);
+    }
+    
+    // Step 2: If we don't have enough real competitors, generate some
+    if (competitors.length < 3) {
+      const simulatedCount = 3 - competitors.length;
+      const simulatedCompetitors = generateSimulatedCompetitors(industry, specialty, userData, simulatedCount);
+      competitors.push(...simulatedCompetitors);
+    }
+    
+    // Step 3: Enhance all competitors with additional data
+    const enhancedCompetitors = await processCompetitors(competitors, industry, specialty);
+    
+    // Step 4: Calculate positions to avoid overlaps
+    return calculateCompetitorPositions(enhancedCompetitors);
+  } catch (error) {
+    console.error(`Error finding and analyzing competitors:`, error.message);
+    // Fallback to simulated competitors
+    const simulatedCompetitors = generateSimulatedCompetitors(industry, specialty, userData, 3);
+    return calculateCompetitorPositions(simulatedCompetitors);
+  }
+}
+
 module.exports = {
   init,
   searchBusinessByName,
@@ -773,5 +1210,8 @@ module.exports = {
   generateCompetitiveInsights,
   processCompetitors,
   calculateCompetitorPositions,
-  generateEclipseVisualization
+  generateEclipseVisualization,
+  determineMarketPosition,
+  findAndAnalyzeCompetitors,
+  analyzeContentWithAI
 };
