@@ -248,8 +248,8 @@ Only return valid JSON that can be parsed. Do not include any explanations or te
             credibility: analysisData.credibilityScore
           });
 
-          return analysisData;
-         } catch (parseError) {
+          return analysisData; // The fix was here, removed the console.log on the next line.
+        } catch (parseError) {
           console.error('Error parsing OpenAI response:', parseError.message);
           console.log('Raw response:', aiResponse);
           return null;
