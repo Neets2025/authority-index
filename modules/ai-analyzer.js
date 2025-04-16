@@ -48,150 +48,144 @@ async function analyzeContent(content, industry, specialty = '') {
       // Check for industry-specific compliance rules
       const complianceGuidelines = getComplianceGuidelines(industry, specialty);
 
-      const systemPrompt = `You are an expert analyst of professional websites in the ${industry} industry${specialty ? ` with specialty in ${specialty}` : ''}.
-Your task is to analyze website content and identify signals of expertise, authority, and trustworthiness.
-Provide a thorough, objective assessment using industry standards.
+      const systemPrompt = `You are an expert marketing and UX analyst in the <span class="math-inline">\{industry\} industry</span>{specialty ? ` specializing in ${specialty}` : ''}. You combine the marketing principles of Professor Mark Ritson and the UX principles of Paul Boag to evaluate website content for expertise, authority, and consistency.
+
+Your task is to provide a thorough, objective assessment of website content, identifying signals of expertise, authority, and trustworthiness, using industry standards.  
+
+IMPORTANT: Your output MUST be in valid JSON format, adhering to the schema provided in the user prompt. DO NOT provide any introductory or explanatory text outside of the JSON object.
 
 ${getIndustrySpecificInstructions(industry, specialty)}
 
 ${complianceGuidelines ? `IMPORTANT COMPLIANCE INFORMATION: ${complianceGuidelines}` : ''}
 
-EXTREMELY IMPORTANT - REDUNDANCY PREVENTION:
-Based on preliminary analysis, this website ALREADY HAS the following elements:
-${existingElements.hasTeamPage ? '- TEAM PAGE: The website already has a team page or about section. DO NOT recommend adding this, but you may suggest improvements to it if needed.' : ''}
-${existingElements.hasTestimonials ? '- TESTIMONIALS: The website already has testimonials or reviews. DO NOT recommend adding these, but you may suggest improvements if needed.' : ''}
-${existingElements.hasCredentials ? '- CREDENTIALS: The website already displays qualifications or certifications. DO NOT recommend adding these, but you may suggest improvements if needed.' : ''}
-${existingElements.hasPortfolio ? '- PORTFOLIO: The website already has a portfolio or case studies section. DO NOT recommend adding this, but you may suggest improvements if needed.' : ''}
+EXTREMELY IMPORTANT - REDUNDANCY PREVENTION: You MUST analyze the content and avoid recommending elements that already exist. Base your analysis on this preliminary information:
 
-Your analysis MUST account for these existing elements, and you should NEVER recommend adding something that is already present.`;
+${existingElements.hasTeamPage ? '- TEAM PAGE: The website has a team page or about section. Focus on improving it, not adding one.' : ''}
+${existingElements.hasTestimonials ? '- TESTIMONIALS: The website has testimonials or reviews. Focus on improving them, not adding them.' : ''}
+${existingElements.hasCredentials ? '- CREDENTIALS: The website displays qualifications. Focus on improving their presentation, not adding them.' : ''}
+${existingElements.hasPortfolio ? '- PORTFOLIO: The website has a portfolio or case studies. Focus on improving it, not adding one.' : ''}
+`;
 
-      const userPrompt = `Analyze this website content for an ${industry} business${specialty ? ` specializing in ${specialty}` : ''}.
+      const userPrompt = `Analyze this website content for an <span class="math-inline">\{industry\} business</span>{specialty ? ` specializing in ${specialty}` : ''}.
 
-IMPORTANT - READ CAREFULLY: Before making any recommendations, thoroughly check if the feature already exists in the content sample. DO NOT recommend adding something that is already present in any form.
+IMPORTANT - READ CAREFULLY: Your analysis MUST account for existing elements. Do NOT recommend adding anything that already exists. Focus on enhancing existing elements.
 
-FIRST, SYSTEMATICALLY CHECK FOR THESE COMMON ELEMENTS:
+**I. Common Elements Checklist:**
 
-1. TEAM PAGE/ABOUT: Does the website have an "About", "About Us", "Our Team", "Meet the Team", or similar section? If terms like "our team", "our people", "who we are", or multiple staff member names appear together, assume a team page exists.
+FIRST, SYSTEMATICALLY CHECK for these common elements. Provide a boolean value (true/false) for each in the JSON output:
 
-2. TESTIMONIALS: Does the website include customer testimonials, reviews, or feedback? Check for quotes, review mentions, client stories, success stories, or ratings.
-
-3. CREDENTIALS: Does the website show qualifications, certifications, licenses, experience claims, or professional memberships?
-
-4. PORTFOLIO: Does the website include project examples, case studies, galleries, "our work" sections, or before/after images?
-
-5. SERVICE AREA MAP: Does the website include a map, service area visualization, or description of locations served?
-
-6. BEFORE/AFTER PHOTOS: Does the website include before/after photos, transformations, or result images?
-
-7. CONTACT FORM: Does the website have a contact form, booking system, or appointment scheduler?
-
-8. PRICING INFO: Does the website mention prices, rates, fees, packages, or costs?
-
-9. SOCIAL PROOF: Does the website include social media links, third-party validation, awards, or recognition?
-
+1.  TEAM PAGE/ABOUT: Does the website have an "About", "About Us", "Our Team", "Meet the Team", or similar section?
+2.  TESTIMONIALS: Does the website include customer testimonials, reviews, or feedback?
+3.  CREDENTIALS: Does the website show qualifications, certifications, licenses, experience claims, or professional memberships?
+4.  PORTFOLIO: Does the website include project examples, case studies, galleries, "our work" sections, or before/after images?
+5.  SERVICE AREA MAP: Does the website include a map, service area visualization, or description of locations served?
+6.  BEFORE/AFTER PHOTOS: Does the website include before/after photos, transformations, or result images?
+7.  CONTACT FORM: Does the website have a contact form, booking system, or appointment scheduler?
+8.  PRICING INFO: Does the website mention prices, rates, fees, packages, or costs?
+9.  SOCIAL PROOF: Does the website include social media links, third-party validation, awards, or recognition?
 10. FAQ SECTION: Does the website include FAQs, common questions, or Q&A sections?
 
-DO NOT recommend adding these elements if they already exist in some form. Instead, recommend specific ways to improve them if needed.
+**II. Core Evaluation:**
 
-EXTREMELY IMPORTANT: For ANY recommendation you make, first verify that you are not suggesting adding something that already exists in the content. Focus on enhancing existing elements rather than adding new ones whenever possible.
+Evaluate the following, providing a score (0-100) for each area in the JSON output.
 
-Content sample:
-${contentSample}
-
-Evaluate the following:
 1.  Expertise signals:
     * Presence and clarity of licenses and certifications.
-    * Detailed staff bios and qualifications. (This may be in the about or our team page)
+    * Detailed staff bios and qualifications.
     * Use of evidence-based claims and citations.
     * Demonstrable experience and case studies.
-
 2.  Authority indicators:
     * Number and quality of backlinks.
     * Industry mentions and recognition.
     * Original research or unique methodologies.
     * Thought leadership content and publications.
-
 3.  Trust elements:
     * Clarity of privacy policy and terms of service.
-    * Presence of testimonials and case studies.
+    * Presence and effectiveness of testimonials and case studies.
     * Responsiveness to inquiries (if data is available).
     * Security measures (e.g., HTTPS, data protection).
-
 4.  Content quality:
     * Depth, accuracy, and usefulness of information.
     * Organization and clarity of content.
     * Relevance to the target audience.
-
 5.  Clarity:
     * How well the business explains what they do and for whom.
     * Ease of navigation and user experience.
     * Clear calls to action.
 
+**III. Detailed Analysis and Recommendations:**
+
+Provide a detailed analysis with specific recommendations for improvement. Remember to AVOID suggesting adding elements that already exist.
+
+Content sample:
+${contentSample}
+
 Format your response as a JSON object with these exact properties and no others:
+
 {
-  "expertiseScore": [0-100 numerical score],
-  "authorityScore": [0-100 numerical score],
-  "trustScore": [0-100 numerical score],
-  "contentQualityScore": [0-100 numerical score],
-  "communicationScore": [0-100 numerical score],
-  "strengths": [array of 2-3 expertise strengths identified],
-  "weaknesses": [array of 2-3 expertise gaps or weaknesses],
-  "keyCredentials": [array of credentials or qualifications mentioned],
-  "uniqueInsights": [array of unique perspectives or methodologies],
-  "trustSignals": [array of trust elements identified],
-  "contentGaps": [array of missing content elements that would improve expertise perception],
-  "complianceIssues": [array of potential regulatory compliance issues, or empty array if none],
-  "industrySpecificRecommendations": [
-      {
-          "category": "EXPERTISE VALIDATION",
-          "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
-          "supportingData": "Data or statistic to support the recommendation",
-          "source": "Source of the data (e.g., study, report, etc.)",
-          "actionItems": [
-              "Action item 1 - DO NOT suggest adding elements that already exist",
-              "Action item 2 - DO NOT suggest adding elements that already exist",
-              "Action item 3 - DO NOT suggest adding elements that already exist"
-          ]
-      },
-      {
-          "category": "AUDIENCE TRUST",
-          "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
-          "supportingData": "Data or statistic to support the recommendation",
-          "source": "Source of the data (e.g., study, report, etc.)",
-          "actionItems": [
-              "Action item 1 - DO NOT suggest adding elements that already exist",
-              "Action item 2 - DO NOT suggest adding elements that already exist",
-              "Action item 3 - DO NOT suggest adding elements that already exist"
-          ]
-      },
-       {
-          "category": "COMMUNICATION INTEGRITY",
-          "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
-          "supportingData": "Data or statistic to support the recommendation",
-          "source": "Source of the data (e.g., study, report, etc.)",
-          "actionItems": [
-              "Action item 1 - DO NOT suggest adding elements that already exist",
-              "Action item 2 - DO NOT suggest adding elements that already exist",
-              "Action item 3 - DO NOT suggest adding elements that already exist"
-          ]
-      },
-       {
-          "category": "REGULATORY COMPLIANCE",
-          "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
-          "supportingData": "Data or statistic to support the recommendation",
-          "source": "Source of the data (e.g., study, report, etc.)",
-          "actionItems": [
-              "Action item 1 - DO NOT suggest adding elements that already exist",
-              "Action item 2 - DO NOT suggest adding elements that already exist",
-              "Action item 3 - DO NOT suggest adding elements that already exist"
-          ]
-      }
-  ]
+    "expertiseScore": [0-100 numerical score],
+    "authorityScore": [0-100 numerical score],
+    "trustScore": [0-100 numerical score],
+    "contentQualityScore": [0-100 numerical score],
+    "communicationScore": [0-100 numerical score],
+    "strengths": [array of 2-3 expertise strengths identified],
+    "weaknesses": [array of 2-3 expertise gaps or weaknesses],
+    "keyCredentials": [array of credentials or qualifications mentioned],
+    "uniqueInsights": [array of unique perspectives or methodologies],
+    "trustSignals": [array of trust elements identified],
+    "contentGaps": [array of missing content elements that would improve expertise perception],
+    "complianceIssues": [array of potential regulatory compliance issues, or empty array if none],
+    "industrySpecificRecommendations": [
+        {
+            "category": "EXPERTISE VALIDATION",
+            "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
+            "supportingData": "Data or statistic to support the recommendation",
+            "source": "Source of the data (e.g., study, report, etc.)",
+            "actionItems": [
+                "Action item 1 - DO NOT suggest adding elements that already exist",
+                "Action item 2 - DO NOT suggest adding elements that already exist",
+                "Action item 3 - DO NOT suggest adding elements that already exist"
+            ]
+        },
+        {
+            "category": "AUDIENCE TRUST",
+            "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
+            "supportingData": "Data or statistic to support the recommendation",
+            "source": "Source of the data (e.g., study, report, etc.)",
+            "actionItems": [
+                "Action item 1 - DO NOT suggest adding elements that already exist",
+                "Action item 2 - DO NOT suggest adding elements that already exist",
+                "Action item 3 - DO NOT suggest adding elements that already exist"
+            ]
+        },
+        {
+            "category": "COMMUNICATION INTEGRITY",
+            "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
+            "supportingData": "Data or statistic to support the recommendation",
+            "source": "Source of the data (e.g., study, report, etc.)",
+            "actionItems": [
+                "Action item 1 - DO NOT suggest adding elements that already exist",
+                "Action item 2 - DO NOT suggest adding elements that already exist",
+                "Action item 3 - DO NOT suggest adding elements that already exist"
+            ]
+        },
+        {
+            "category": "REGULATORY COMPLIANCE",
+            "recommendation": "Specific recommendation text - DO NOT suggest adding elements that already exist",
+            "supportingData": "Data or statistic to support the recommendation",
+            "source": "Source of the data (e.g., study, report, etc.)",
+            "actionItems": [
+                "Action item 1 - DO NOT suggest adding elements that already exist",
+                "Action item 2 - DO NOT suggest adding elements that already exist",
+                "Action item 3 - DO NOT suggest adding elements that already exist"
+            ]
+        }
+    ]
 }
 
 Only return valid JSON that can be parsed. Do not include any explanations or text outside the JSON.`;
 
-      console.log(`Sending ${industry}${specialty ? ` (${specialty})` : ''} content to OpenAI for analysis`);
+      console.log(`Sending <span class="math-inline">\{industry\}</span>{specialty ? ` (${specialty})` : ''} content to OpenAI for analysis`);
 
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
@@ -219,6 +213,8 @@ Only return valid JSON that can be parsed. Do not include any explanations or te
         }
       );
 
+      console.log("OpenAI Response:", response); // ADDED THIS LINE
+
       if (response.data && response.data.choices && response.data.choices.length > 0) {
         const aiResponse = response.data.choices[0].message.content;
 
@@ -236,10 +232,10 @@ Only return valid JSON that can be parsed. Do not include any explanations or te
 
           // Post-process recommendations to filter out any that still refer to adding elements that already exist
           analysisData.industrySpecificRecommendations = postProcessRecommendations(
-            analysisData.industrySpecificRecommendations, 
+            analysisData.industrySpecificRecommendations,  
             existingElements
           );
-          
+         
           // Verify recommendations against content
           verifyRecommendations(analysisData, contentSample, existingElements);
 
@@ -253,8 +249,7 @@ Only return valid JSON that can be parsed. Do not include any explanations or te
           });
 
           return analysisData;
-            console.log(`OpenAI token usage: ${response.data.usage.total_tokens} tokens`);
-        } catch (parseError) {
+         } catch (parseError) {
           console.error('Error parsing OpenAI response:', parseError.message);
           console.log('Raw response:', aiResponse);
           return null;
@@ -289,12 +284,12 @@ Only return valid JSON that can be parsed. Do not include any explanations or te
  */
 function preAnalyzeContent(content) {
   const contentLower = content.toLowerCase();
-  
+ 
   // Check for team page
-  const hasTeamPage = 
-    contentLower.includes('about us') || 
-    contentLower.includes('our team') || 
-    contentLower.includes('meet the team') || 
+  const hasTeamPage =  
+    contentLower.includes('about us') ||  
+    contentLower.includes('our team') ||  
+    contentLower.includes('meet the team') ||  
     contentLower.includes('about our') ||
     contentLower.includes('our staff') ||
     contentLower.includes('our people') ||
@@ -304,12 +299,12 @@ function preAnalyzeContent(content) {
     contentLower.includes('about the') ||
     /meet\s+([a-z]+\s+){1,3}team/i.test(contentLower) ||
     /(dr|doctor|prof|professor)\.?\s+[a-z]+/i.test(content); // Pattern for doctors/professors
-  
+ 
   // Check for testimonials
-  const hasTestimonials = 
-    contentLower.includes('testimonial') || 
-    contentLower.includes('review') || 
-    contentLower.includes('what our clients say') || 
+  const hasTestimonials =  
+    contentLower.includes('testimonial') ||  
+    contentLower.includes('review') ||  
+    contentLower.includes('what our clients say') ||  
     contentLower.includes('customer feedback') ||
     contentLower.includes('client stories') ||
     contentLower.includes('success stories') ||
@@ -318,12 +313,12 @@ function preAnalyzeContent(content) {
     contentLower.includes('satisfied customers') ||
     /[""].*[""].*said/i.test(content) || // Look for quote patterns
     /stars?[\s\-–—]{1,3}[0-9.]{1,3}\/[0-9.]{1,3}/i.test(content); // Look for star ratings
-  
+ 
   // Check for credentials
-  const hasCredentials = 
-    contentLower.includes('certified') || 
-    contentLower.includes('license') || 
-    contentLower.includes('qualified') || 
+  const hasCredentials =  
+    contentLower.includes('certified') ||  
+    contentLower.includes('license') ||  
+    contentLower.includes('qualified') ||  
     contentLower.includes('accredited') ||
     contentLower.includes('credential') ||
     contentLower.includes('certificate') ||
@@ -339,12 +334,12 @@ function preAnalyzeContent(content) {
     contentLower.includes('years of experience') ||
     /[A-Z]{2,5},\s+[A-Z]{2,5}/.test(content) || // Look for credential patterns like "MBA, CPA"
     /[A-Z]{2,5}(?:-|\s)certified/i.test(content); // Look for "ABC-certified" pattern
-  
+ 
   // Check for portfolio
-  const hasPortfolio = 
-    contentLower.includes('portfolio') || 
-    contentLower.includes('our work') || 
-    contentLower.includes('case stud') || 
+  const hasPortfolio =  
+    contentLower.includes('portfolio') ||  
+    contentLower.includes('our work') ||  
+    contentLower.includes('case stud') ||  
     contentLower.includes('project') ||
     contentLower.includes('gallery') ||
     contentLower.includes('showcase') ||
@@ -355,9 +350,9 @@ function preAnalyzeContent(content) {
     contentLower.includes('recent work') ||
     contentLower.includes('our projects') ||
     /before\s+(?:&|and)\s+after/i.test(contentLower);
-  
+ 
   // Check for specific features
-  const hasMap = 
+  const hasMap =  
     contentLower.includes('map') ||
     contentLower.includes('service area') ||
     contentLower.includes('service location') ||
@@ -365,8 +360,8 @@ function preAnalyzeContent(content) {
     contentLower.includes('coverage area') ||
     contentLower.includes('we service') ||
     /locations?(?:\s+we)?(?:\s+serve)/i.test(contentLower);
-  
-  const hasBeforeAfterPhotos = 
+ 
+  const hasBeforeAfterPhotos =  
     contentLower.includes('before and after') ||
     contentLower.includes('before & after') ||
     contentLower.includes('transformation') ||
